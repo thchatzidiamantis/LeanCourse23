@@ -33,17 +33,36 @@ The negation `¬ A` just means `A → False`, where `False` is a specific false 
 We can use the same tactics as for implication:
 `intro` to prove a negation, and `apply` to use one. -/
 
-example {p : Prop} (h : p) : ¬ ¬ p := by sorry
+example {p : Prop} (h : p) : ¬ ¬ p := by
+  intro h2
+  exact h2 h
 
-example {α : Type*} {p : α → Prop} : ¬ (∃ x, p x) ↔ ∀ x, ¬ p x := by sorry
+
+example {α : Type*} {p : α → Prop} : ¬ (∃ x, p x) ↔ ∀ x, ¬ p x := by
+  constructor
+  · intro h x hx
+    apply h
+    use x
+    -- or exact ⟨ x, hx ⟩
+  · intro h h2
+    obtain ⟨ x, hx ⟩ := h2
+    specialize h x hx
+    exact h
 
 /- We can use `exfalso` to use the fact that everything follows from `False`:
 ex falso quod libet -/
-example {p : Prop} (h : ¬ p) : p → 0 = 1 := by sorry
+example {p : Prop} (h : ¬ p) : p → 0 = 1 := by
+  intro h2
+  specialize h h2
+  exfalso
+  assumption
+
 
 /- `contradiction` proves any goal when two hypotheses are contradictory. -/
 
-example {p : Prop} (h : ¬ p) : p → 0 = 1 := by sorry
+example {p : Prop} (h : ¬ p) : p → 0 = 1 := by
+  intro h2
+  contradiction
 
 
 
@@ -58,13 +77,31 @@ We can use classical reasoning (with the law of the excluded middle) using the f
 * `push_neg` to push negations inside quantifiers and connectives.
 -/
 
-example {p : Prop} (h : ¬ ¬ p) : p := by sorry
+example {p : Prop} (h : ¬ ¬ p) : p := by
+{
+  by_contra g
+  exact h g
+}
 
-example (p q : Prop) (h : ¬ q → ¬ p) : p → q := by sorry
+example (p q : Prop) (h : ¬ q → ¬ p) : p → q := by
+{
+  intro hp
+  by_contra hnq
+  exact h hnq hp
+}
 
-example (p q r : Prop) (h1 : p → r) (h2 : ¬ p → r) : r := by sorry
+example (p q r : Prop) (h1 : p → r) (h2 : ¬ p → r) : r := by
+{
+  by_cases hp :p
+  · exact h1 hp
+  · exact h2 hp
+}
 
-example {α : Type*} {p : α → Prop} : ¬ (∃ x, p x) ↔ ∀ x, ¬ p x := by sorry
+example {α : Type*} {p : α → Prop} : ¬ (∃ x, p x) ↔ ∀ x, ¬ p x := by
+{
+  push_neg
+  rfl
+}
 
 
 
@@ -74,10 +111,37 @@ def SequentialLimit (u : ℕ → ℝ) (l : ℝ) : Prop :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - l| < ε
 
 example (u : ℕ → ℝ) (l : ℝ) :
-    ¬ SequentialLimit u l ↔ ∃ ε > 0, ∀ N, ∃ n ≥ N, |u n - l| ≥ ε := by sorry
+    ¬ SequentialLimit u l ↔ ∃ ε > 0, ∀ N, ∃ n ≥ N, |u n - l| ≥ ε := by
+  {
+    rw [SequentialLimit]
+    push_neg
+    rfl
+  }
 
 lemma sequentialLimit_unique (u : ℕ → ℝ) (l l' : ℝ) :
-    SequentialLimit u l → SequentialLimit u l' → l = l' := by sorry
+    SequentialLimit u l → SequentialLimit u l' → l = l' := by
+  {
+    intro hl hl'
+    by_contra hll'
+    have : |l - l'| > 0
+    · apply abs_pos.2
+      apply sub_ne_zero.2
+      exact hll'
+    rw [SequentialLimit] at hl hl'
+    specialize hl (|l - l'|/2) (by linarith)
+    obtain ⟨N, hN ⟩ := hl
+    obtain ⟨ N', hN' ⟩ := hl' (|l - l'|/2) (by linarith)
+    let N₀ := max N N'
+    specialize hN N₀ (Nat.le_max_left N N')
+    specialize hN' N₀ (Nat.le_max_right N N')
+    have : |l - l'| < |l - l'| := by
+      calc |l - l'|
+           = |l - u N₀ + (u N₀ - l')| := by ring
+          _≤ |l - u N₀| + |u N₀ - l'| := by exact abs_add (l - u N₀) (u N₀ - l')
+          _= |u N₀ - l| + |u N₀ - l'| := by rw [abs_sub_comm]
+          _< |l - l'| := by linarith
+    linarith
+  }
 
 
 /- ## Exercises -/
@@ -85,14 +149,73 @@ lemma sequentialLimit_unique (u : ℕ → ℝ) (l l' : ℝ) :
 
 /- Prove the following without using `push_neg` or lemmas from the library.
 You will need to use `by_contra` in the proof. -/
-example {α : Type*} (p : α → Prop) : (∃ x, p x) ↔ (¬ ∀ x, ¬ p x) := by sorry
+example {α : Type*} (p : α → Prop) : (∃ x, p x) ↔ (¬ ∀ x, ¬ p x) := by
+{
+  push_neg
+  constructor
+  · intro h
+    exact h
+  · intro h
+    exact h
+}
 
-lemma convergesTo_const (a : ℝ) : SequentialLimit (fun n : ℕ ↦ a) a := by sorry
+lemma convergesTo_const (a : ℝ) : SequentialLimit (fun n : ℕ ↦ a) a := by
+{
+  rw [SequentialLimit]
+  intro e he
+  simp
+  use 0
+  intro n
+  simp
+  exact he
+}
 
 /- The next exercise is harder, and you will probably not finish it during class. -/
 lemma SequentialLimit.add {s t : ℕ → ℝ} {a b : ℝ}
     (hs : SequentialLimit s a) (ht : SequentialLimit t b) :
-    SequentialLimit (fun n ↦ s n + t n) (a + b) := by sorry
+    SequentialLimit (fun n ↦ s n + t n) (a + b) := by
+  {
+    rw [SequentialLimit]
+    rw [SequentialLimit] at hs
+    rw [SequentialLimit] at ht
+    intro e he
+    specialize hs (e/2)
+    specialize ht (e/2)
+    have he': (e/2) > 0 := by exact half_pos he
+    specialize hs he'
+    specialize ht he'
+    obtain ⟨N1, h1⟩ := hs
+    obtain ⟨N2, h2⟩ := ht
+    let M := max N1 N2
+    use M
+    have hm1: M ≥ N1 := by exact Nat.le_max_left N1 N2
+    have hm2: M ≥ N2 := by exact Nat.le_max_right N1 N2
+    intro n hn
+    calc |s n + t n - (a + b)|
+      _= |s n + t n - a - b| := by ring
+      _= |(s n - a) + (t n - b)| := by ring
+      _≤ |s n - a| + |t n - b| := by exact abs_add (s n - a) (t n - b)
+      _< (e/2) + |t n - b| := by {refine add_lt_add_right ?bc |t n - b|
+                                  specialize h1 n
+                                  have hn1: n≥N1 := by
+                                  {
+                                    exact ge_trans hn hm1
+                                  }
+                                  specialize h1 hn1
+                                  exact h1
+                                  }
+      _< (e/2) + (e/2) := by  {
+                                apply add_lt_add_left
+                                specialize h2 n
+                                have hn2: n≥N2 := by
+                                {
+                                  exact ge_trans hn hm2
+                                }
+                                specialize h2 hn2
+                                exact h2
+                              }
+      _= e := by ring
+    }
 
 
 

@@ -22,10 +22,20 @@ You can prove that two sets are equal by applying `subset_antisymm` or using the
 variable {α β : Type*} (x : α) (s t : Set α)
 
 /- We saw last time that we can prove that two sets are equal using `ext`. -/
-example : s ∩ t = t ∩ s := by sorry
+example : s ∩ t = t ∩ s := by
+{
+  ext x
+  simp only [mem_inter_iff, and_comm]
+}
 
 /- We can also use existing lemmas and `calc`. -/
-example : (s ∪ tᶜ) ∩ t = s ∩ t := by sorry
+example : (s ∪ tᶜ) ∩ t = s ∩ t := by
+{
+  calc (s ∪ tᶜ) ∩ t
+      = (s ∩ t) ∪ (tᶜ ∩ t) := by rw [@inter_distrib_right]
+    _ = (s ∩ t) ∪ ∅ := by rw [@compl_inter_self]
+    _ = s ∩ t := by rw [@union_empty]
+}
 
 
 
@@ -39,7 +49,14 @@ example : (s ∪ tᶜ) ∩ t = s ∩ t := by sorry
 def Evens : Set ℕ := {n : ℕ | Even n}
 def Odds : Set ℕ := {n | ¬ Even n}
 
-example : Evens ∪ Odds = univ := by sorry
+example : Evens ∪ Odds = univ := by
+{
+  ext n
+  simp
+  by_cases hn : Even n
+  simp [Evens, Odds, hn]
+  simp [Odds, Evens, hn]
+}
 
 
 
@@ -64,7 +81,11 @@ example (s : Set α) : 𝒫 s = {t | t ⊆ s} := by rfl -- \powerset
 /- What is the type of `𝒫 s`? -/
 
 
-example (s t : Set α) : 𝒫 (s ∩ t) = 𝒫 s ∩ 𝒫 t := by sorry
+example (s t : Set α) : 𝒫 (s ∩ t) = 𝒫 s ∩ 𝒫 t := by
+{
+  ext u
+  simp only [mem_powerset_iff, subset_inter_iff, mem_inter_iff]
+}
 
 
 
@@ -103,7 +124,12 @@ example (𝓒 : Set (Set α)) : ⋃₀ 𝓒 = ⋃ c ∈ 𝓒, c := by ext; simp
 
 
 
-example (C : ι → Set α) (s : Set α) : s ∩ (⋃ i, C i) = ⋃ i, (C i ∩ s) := by sorry
+example (C : ι → Set α) (s : Set α) : s ∩ (⋃ i, C i) = ⋃ i, (C i ∩ s) := by
+{
+  ext x
+  simp
+  rw [and_comm]
+}
 
 
 /- We can take images and preimages of sets.
@@ -116,7 +142,19 @@ example (f : α → β) (s : Set β) : f ⁻¹' s = { x : α | f x ∈ s } := by
 example (f : α → β) (s : Set α) : f '' s = { y : β | ∃ x ∈ s, f x = y } := by rfl
 
 
-example {s : Set α} {t : Set β} {f : α → β} : f '' s ⊆ t ↔ s ⊆ f ⁻¹' t := by sorry
+example {s : Set α} {t : Set β} {f : α → β} : f '' s ⊆ t ↔ s ⊆ f ⁻¹' t := by
+{
+  constructor
+  · intro h x hx
+    simp
+    apply h
+    exact mem_image_of_mem f hx
+  · intro h y hy
+    obtain ⟨ x, hx, hxy⟩ := hy
+    rw [← hxy]
+    specialize h hx
+    exact h
+}
 
 /-
 If you have a hypothesis `h : y = t` or `h : t = y`,
@@ -145,7 +183,13 @@ open Pointwise
 example (s t : Set ℝ) : s + t = {x : ℝ | ∃ a b, a ∈ s ∧ b ∈ t ∧ a + b = x } := by rfl
 example (s t : Set ℝ) : -s = {x : ℝ | -x ∈ s } := by rfl
 
-example : ({1, 3, 5} : Set ℝ) + {0, 10} = {1, 3, 5, 11, 13, 15} := by sorry
+example : ({1, 3, 5} : Set ℝ) + {0, 10} = {1, 3, 5, 11, 13, 15} := by
+{
+  ext x
+  simp [mem_add]
+  norm_num
+  tauto
+}
 
 
 
@@ -157,13 +201,68 @@ example : ({1, 3, 5} : Set ℝ) + {0, 10} = {1, 3, 5, 11, 13, 15} := by sorry
 
 /- # Exercises for the break. -/
 
-example {f : β → α} : f '' (f ⁻¹' s) ⊆ s := by sorry
+example {f : β → α} : f '' (f ⁻¹' s) ⊆ s := by
+{
+  simp
+  intro y hy
+  exact hy
+}
 
-example {f : β → α} (h : Surjective f) : s ⊆ f '' (f ⁻¹' s) := by sorry
+example {f : β → α} (h : Surjective f) : s ⊆ f '' (f ⁻¹' s) := by
+{
+  intro y hy
+  simp
+  specialize h y
+  obtain ⟨a, ha⟩ := h
+  use a
+  constructor
+  simp only [ha]
+  exact hy
+  · exact ha
+}
 
-example {f : α → β} (h : Injective f) : f '' s ∩ f '' t ⊆ f '' (s ∩ t) := by sorry
+example {f : α → β} (h : Injective f) : f '' s ∩ f '' t ⊆ f '' (s ∩ t) := by
+{
+  intro y hy
+  simp at hy
+  simp
+  obtain ⟨hy1, hy2⟩ := hy
+  obtain ⟨x1, hx1, hx1'⟩:= hy1
+  obtain ⟨x2, hx2, hx2'⟩:= hy2
+  rw [Injective] at h
+  have g : f x1 = f x2 := by
+  {
+    calc f x1 =
+         y := by apply hx1'
+       _= f x2 := by exact id hx2'.symm
+  }
+  specialize h g
+  use x1
+  constructor
+  · constructor
+    · exact hx1
+    · exact mem_of_eq_of_mem h hx2
+  · exact hx1'
+}
 
-example {I : Type*} (f : α → β) (A : I → Set α) : (f '' ⋃ i, A i) = ⋃ i, f '' A i := by sorry
+example {I : Type*} (f : α → β) (A : I → Set α) : (f '' ⋃ i, A i) = ⋃ i, f '' A i := by
+{
+  ext x
+  simp
+  constructor
+  · intro h1
+    obtain ⟨ x1, hx1, hx1'⟩:= h1
+    obtain ⟨ i₀, hi₀⟩ := hx1
+    use i₀
+    use x1
+  · intro h1
+    obtain ⟨ i₀, hi₀⟩ := h1
+    obtain ⟨ x1, hx1, hx1'⟩:= hi₀
+    use x1
+    constructor
+    use i₀
+    exact hx1'
+}
 
 example : (fun x : ℝ ↦ x ^ 2) '' univ = { y : ℝ | y ≥ 0 } := by sorry
 
@@ -187,14 +286,18 @@ variable (f : α → β)
 open Classical
 
 def conditionalInverse (y : β) (h : ∃ x, f x = y) : α :=
-  sorry
+   Classical.choose h
 
 lemma invFun_spec (y : β) (h : ∃ x, f x = y) : f (conditionalInverse f y h) = y := sorry
 
+
 /- We can now define the function by cases on whether it lies in the range of `f` or not. -/
 
+variable [Inhabited α]
 def inverse (f : α → β) (y : β) : α :=
-  sorry
+    if h: ∃ x : α, f x = y then
+    conditionalInverse f y h else
+    default
 
 local notation "g" => inverse f -- let's call this function `g`
 
@@ -202,9 +305,24 @@ local notation "g" => inverse f -- let's call this function `g`
 /- We can now prove that `g` is a right-inverse if `f` is surjective
 and a left-inverse if `f` is injective.
 We use the `ext` tactic to show that two functions are equal. -/
-example (hf : Surjective f) : f ∘ g = id := by sorry
+example (hf : Surjective f) : f ∘ g = id := by
+{
+  ext y
+  simp
+  obtain ⟨ x, rfl ⟩ := hf y
+  simp [inverse, invFun_spec]
+}
 
-example (hf : Injective f) : g ∘ f = id := by sorry
+example (hf : Injective f) : g ∘ f = id := by
+{
+  ext x
+  simp [inverse]
+  have : ∀ x y : α, f x = f y ↔ x = y
+  · intro x y
+    exact hf.eq_iff
+  apply hf
+  simp [invFun_spec]
+}
 
 
 end Inverse
@@ -214,7 +332,10 @@ end Inverse
 
 Let's prove Cantor's theorem: there is no surjective function from any set to its power set. -/
 
-example : ¬ ∃ (α : Type*) (f : α → Set α), Surjective f := by sorry
+example : ¬ ∃ (α : Type*) (f : α → Set α), Surjective f := by
+{
+  sorry
+}
 
 
 /- In section 4.3 of MIL you can read the proof of the Cantor-Schröder-Bernstein theorem. -/

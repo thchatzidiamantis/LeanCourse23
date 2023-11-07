@@ -7,7 +7,9 @@ example (a b c : ℝ) : a * b * c = b * (a * c) := by
 
 -- Try these.
 example (a b c : ℝ) : c * b * a = b * (a * c) := by
-  sorry
+  {
+
+  }
 
 example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
   sorry

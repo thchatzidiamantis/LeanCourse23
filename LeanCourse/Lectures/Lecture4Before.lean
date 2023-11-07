@@ -39,11 +39,31 @@ The tactics for universal quantification and implication are the same.
 def NonDecreasing (f : ℝ → ℝ) := ∀ x₁ x₂ : ℝ, x₁ ≤ x₂ → f x₁ ≤ f x₂
 
 example (f g : ℝ → ℝ) (hg : NonDecreasing g) (hf : NonDecreasing f) :
-    NonDecreasing (g ∘ f) := by sorry
+    NonDecreasing (g ∘ f) := by
+    {
+      rw [NonDecreasing]
+      rw [NonDecreasing] at hf hg
+      intro x₁ x₂ hx₁x₂
+      specialize hf x₁ x₂ hx₁x₂
+      specialize hg (f x₁) (f x₂) hf
+      rw [Function.comp, Function.comp]
+      exact hg
+    }
 
 /-- Note: `f + g` is the function defined by `(f + g)(x) := f(x) + g(x)` -/
 example (f g : ℝ → ℝ) (hf : NonDecreasing f) (hg : NonDecreasing g) :
-    NonDecreasing (f + g) := by sorry
+    NonDecreasing (f + g) := by
+    {
+      intro x₁ x₂ hx₁x₂
+      simp
+      gcongr
+      specialize hf x₁ x₂
+      apply hf
+      exact hx₁x₂
+      specialize hg x₁ x₂
+      apply hg
+      exact hx₁x₂
+    }
 
 
 
@@ -63,9 +83,43 @@ We already saw last time:
   - `rw [← h]`
 -/
 
-example (x : ℝ) : 0 ≤ x ^ 3 ↔ 0 ≤ x ^ 5 := by sorry
+example (x : ℝ) : 0 ≤ x ^ 3 ↔ 0 ≤ x ^ 5 := by
+{
+  have h1:0 ≤ x ^ 3 ↔ 0 ≤ x := by
+  {
+    apply Odd.pow_nonneg_iff
+    simp
+  }
+  have h2:0 ≤ x ^ 5 ↔ 0 ≤ x := by
+  {
+    apply Odd.pow_nonneg_iff
+    simp
+  }
+  constructor
+  intro h3
+  apply h2.2
+  apply h1.1
+  exact h3
+  intro h4
+  apply h1.2
+  apply h2.1
+  exact h4
+}
 
-
+example (x : ℝ) : 0 ≤ x ^ 3 ↔ 0 ≤ x ^ 5 := by
+{
+  have h1:0 ≤ x ^ 3 ↔ 0 ≤ x := by
+  {
+    apply Odd.pow_nonneg_iff
+    simp
+  }
+  have h2:0 ≤ x ^ 5 ↔ 0 ≤ x := by
+  {
+    apply Odd.pow_nonneg_iff
+    simp
+  }
+  rw [h1,h2]
+}
 
 
 
@@ -85,9 +139,26 @@ Furthermore, we can decompose conjunction and equivalences.
   gives two new assumptions `hPQ : P → Q` and `hQP : Q → P`.
 -/
 
-example (p q r s : Prop) (h : p → r) (h' : q → s) : p ∧ q → r ∧ s := by sorry
+example (p q r s : Prop) (h : p → r) (h' : q → s) : p ∧ q → r ∧ s := by
+{
+  intro hpq
+  obtain ⟨ hp, hq ⟩  := hpq
+  constructor
+  · apply h
+    exact hp
+  · apply h'
+    exact hq
+}
 
-example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by sorry
+example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by
+{
+  constructor
+  · intro hpqr hpq
+    apply hpqr
+    obtain ⟨ hp, hq ⟩ := hpq
+    assumption
+
+}
 
 
 
@@ -100,7 +171,12 @@ example (p q r : Prop) : (p → (q → r)) ↔ p ∧ q → r := by sorry
 In order to prove `∃ x, P x`, we give some `x₀` using tactic `use x₀` and
 then prove `P x₀`. This `x₀` can be any expression.
 -/
-example : ∃ n : ℕ, ∀ m : ℕ, m * n = m + m + m := by sorry
+example : ∃ n : ℕ, ∀ m : ℕ, m * n = m + m + m := by
+{
+  use 3
+  intro m
+  linarith
+}
 
 
 /-
@@ -111,7 +187,13 @@ to fix one `x₀` that works.
 example {α : Type*} [PartialOrder α]
     (IsDense : ∀ x y : α, x < y → ∃ z : α, x < z ∧ z < y)
     (x y : α) (hxy : x < y) :
-    ∃ z₁ z₂ : α, x < z₁ ∧ z₁ < z₂ ∧ z₂ < y := by sorry
+    ∃ z₁ z₂ : α, x < z₁ ∧ z₁ < z₂ ∧ z₂ < y := by
+    {
+      obtain ⟨ z, h1z, h2z ⟩ := IsDense x y hxy
+      use z
+      obtain ⟨ z', h1z', h2z' ⟩ := IsDense z y h2z
+      use z'
+    }
 
 
 
@@ -122,19 +204,57 @@ example {α : Type*} [PartialOrder α]
 
 /- Exercises -/
 
-example {p : ℝ → Prop} (h : ∀ x, p x) : ∃ x, p x := by sorry
+example {p : ℝ → Prop} (h : ∀ x, p x) : ∃ x, p x := by
+{
+  use 1
+  specialize h 1
+  exact h
+}
 
 
 example {α : Type*} {p q : α → Prop} (h : ∀ x, p x → q x) :
-    (∃ x, p x) → (∃ x, q x) := by sorry
+    (∃ x, p x) → (∃ x, q x) := by
+    {
+      intro h'
+      obtain ⟨ x₀, hx₀ ⟩ := h'
+      use x₀
+      specialize h x₀
+      apply h
+      exact hx₀
+    }
 
 
 example {α : Type*} {p : α → Prop} {r : Prop} :
-    ((∃ x, p x) → r) ↔ (∀ x, p x → r) := by sorry
+    ((∃ x, p x) → r) ↔ (∀ x, p x → r) := by
+    {
+      constructor
+      · intro h1
+        intro x
+        intro h1'
+        apply h1
+        use x
+      · intro h2
+        intro h3
+        obtain ⟨ x₀, h4 ⟩ := h3
+        apply h2 x₀
+        exact h4
+    }
 
 
 example {α : Type*} {p : α → Prop} {r : Prop} :
-    (∃ x, p x ∧ r) ↔ ((∃ x, p x) ∧ r) := by sorry
+    (∃ x, p x ∧ r) ↔ ((∃ x, p x) ∧ r) := by
+    {
+      constructor
+      · intro h
+        obtain ⟨ x₀, h1, h2 ⟩ := h
+        constructor
+        use x₀
+        exact h2
+      · intro h'
+        obtain ⟨ h3, h4 ⟩ := h'
+        obtain ⟨ x₀, h5 ⟩ := h3
+        use x₀
+    }
 
 
 
@@ -146,7 +266,7 @@ Lean denotes by `∨` the logical OR operator.
 
 In order to make use of an assumption
   `h : P ∨ Q`
-we use the cases tactic:
+we use the obtain tactic:
   `obtain hP|hQ := h`
 which creates two proof branches: one branch assuming `hP : P`,
 and one branch assuming `hQ : Q`.
@@ -159,7 +279,37 @@ tactic and prove `Q`.
 variable (a b : ℝ)
 #check (mul_eq_zero : a*b = 0 ↔ a = 0 ∨ b = 0)
 
-example : a = a * b → a = 0 ∨ b = 1 := by sorry
+example : a = a * b → a = 0 ∨ b = 1 := by
+{
+  intro h
+  have hyp : a*(b-1)=0 := by
+  {
+    calc a*(b-1)=a*b-a := by ring
+     _=a-a := by rw [← h]
+     _=0 := by ring
+  }
+  rw [mul_eq_zero] at hyp
+  obtain ha|hb := hyp
+  · left
+    assumption
+  · right
+    linarith
+}
 
 
-example (f : ℝ → ℝ) (hf : StrictMono f) : Injective f := by sorry
+example (f : ℝ → ℝ) (hf : StrictMono f) : Injective f := by
+{
+  rw [Injective]
+  rw [StrictMono] at hf
+  intro x y hxy
+  have : x < y ∨ x = y ∨ x > y := by
+  {
+    exact lt_trichotomy x y
+  }
+  obtain h_lt|h_eq|h_gt := this
+  · specialize hf h_lt
+    linarith
+  · assumption
+  · specialize hf h_gt
+    linarith
+}

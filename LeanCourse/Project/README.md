@@ -2,8 +2,8 @@
 
 Please fill out the following:
 ```
-First & last name:
-Uni-ID:
+First & last name: Theofanis Chatzidiamantis Christoforidis
+Uni-ID: 50059751
 ```
 
 ## Your own project

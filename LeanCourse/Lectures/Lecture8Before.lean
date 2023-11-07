@@ -16,13 +16,14 @@ Last time we discussed natural numbers, induction, and casts.
 
 /- Warning: sometimes you have to use `clear` to get rid of hypotheses when doing induction. -/
 example (hn : 2 ∣ n) : (∑ i in range (n + 1), i : ℚ) = n * (n + 1) / 2 := by
+  clear hn
   induction n with
   | zero => simp
   | succ n ih =>
-    sorry
-    -- rw [sum_range_succ, ih]
-    -- push_cast
-    -- ring
+    rw [sum_range_succ, ih]
+    push_cast
+    ring
+
 
 
 
@@ -98,7 +99,6 @@ def myPoint4 : Point := ⟨1, 2, 3⟩
 def myPoint5 := Point.mk 1 2 3
 
 
-
 namespace Point
 
 /- We can define operations on points, like addition. -/
@@ -124,7 +124,13 @@ end Point
 
 open Point
 
+structure ouuu where
+  add : ℕ → ℕ → ℕ
+
+open ouuu
+
 #check add myPoint1 myPoint2
+#check fun x : ouuu ↦ add x (1 : ℕ) 2
 
 
 namespace Point
@@ -148,8 +154,6 @@ instance : Add Point := ⟨add⟩
 example (a b : Point) : a + b = b + a := by ext <;> simp [add_comm]
 
 end Point
-
-
 
 
 
@@ -196,6 +200,9 @@ And it gets ugly when you have more than 2 projections. -/
 
 example (x : PosReal) : x.1 > 0 := x.2
 
+def PosPoint'' : Type :=
+  { x : ℝ × ℝ × ℝ // x.1 > 0 ∧ x.2.1 > 0 ∧ x.2.2 > 0 }
+
 
 
 
@@ -231,7 +238,7 @@ universe u v
 #check Type (v + 3)
 #check Type (max u v)
 #check fun (α : Type u) (β : Type v) ↦ α → β
--- #check Type (u + v) -- the operations on universes are very limited.
+ -- #check Type (u + v) -- the operations on universes are very limited.
 
 /-
 * `Type*` means `Type u` for some new variable `u`
@@ -402,22 +409,60 @@ example (x : ℝ) : x * 1 = x := mul_one x
 `x₀ ≠ x₁` in it.
 Then state and prove the lemma that for any object in this class we have `∀ z, z ≠ x₀ ∨ z ≠ x₁.` -/
 
+class StrictBipointedType where
+  T : Type*
+  x₀ : T
+  x₁ : T
+  diff : x₀ ≠ x₁
 
+lemma diff' (t : StrictBipointedType) : ∀ z : t.T, z ≠ t.x₀ ∨ z ≠ t.x₁ := by
+{
+  intro z
+  by_cases z = t.x₀
+  · right
+    by_contra a
+    apply t.diff
+    calc t.x₀
+       = z := by symm ; exact h
+      _= t.x₁ := by exact a
+  · left
+    exact h
+}
 
 /- 2. Define scalar multiplication of a real number and a `Point`.
 Also define scalar multiplication of a positive real number and a `PosPoint`. -/
 
+def Scalar.mul (a : ℝ) (p : Point) : Point :=
+⟨ a * p.x, a * p.y, a* p.z ⟩
+
+def PosScalar.mul (a : PosReal) (p : PosPoint) : PosPoint :=
+{
+  x := a.1 * p.x
+  y := a.1 * p.y
+  z := a.1 * p.z
+  x_pos := by simp [a.2, p.x_pos]
+  y_pos := by simp [a.2, p.y_pos]
+  z_pos := by simp [a.2, p.z_pos]
+}
 
 
 /- 3. Define Pythagorean triples, i.e. triples `a b c : ℕ` with `a^2 + b^2 = c^2`.
 Give an example of a Pythagorean triple, and show that multiplying a Pythagorean triple by a
 constant gives another Pythagorean triple. -/
 
+class PythTriple where
+  a : ℕ
+  b : ℕ
+  c : ℕ
+  Py : a ^ 2 + b ^ 2 = c ^ 2
+
+#check PythTriple.mk 3 4 5 rfl
 
 
 /- 4. Prove that triples of equivalent types are equivalent. -/
 
-example (α β : Type*) (e : α ≃ β) : Triple α ≃ Triple β := sorry
+example (α β : Type*) (e : α ≃ β) : Triple α ≃ Triple β :=
+  sorry
 
 
 /- 5. Show that if `G` is an abelian group then triples from elements of `G` is an abelian group. -/
