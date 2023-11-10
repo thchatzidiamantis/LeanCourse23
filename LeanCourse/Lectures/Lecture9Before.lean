@@ -223,7 +223,7 @@ have the lattice operation `⊓` and all lemmas about lattices are readily avail
 example {G : Type*} [Group G] : CompleteLattice (Subgroup G) := by infer_instance
 
 example {G : Type*} [Group G] (H H' : Subgroup G) :
-    ((H ⊓ H' : Subgroup G) : Set G) = (H : Set G) ∩ (H' : Set G) := rfl
+    ((H ⊓ H' : Subgroup G) : Set G) = (H : Set G) ∩ (H' : Set G) := by rfl
 
 example {G : Type*} [Group G] (H H' : Subgroup G) :
     ((H ⊔ H' : Subgroup G) : Set G) = Subgroup.closure ((H : Set G) ∪ (H' : Set G)) := by
@@ -360,9 +360,29 @@ open Subgroup
 /- Define the conjugate of a subgroup. -/
 def conjugate (x : G) (H : Subgroup G) : Subgroup G where
   carrier := {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹}
-  one_mem' := by sorry
-  inv_mem' := by sorry
-  mul_mem' := by sorry
+  one_mem' := by use 1 ; constructor ; exact Subgroup.one_mem H ; group
+  inv_mem' := by
+              {
+                intro a ha
+                use x⁻¹ * a⁻¹ * x
+                constructor
+                ·
+              }
+  mul_mem' := by
+              {
+                intro a b ha hb
+                simp at ha hb
+                obtain ⟨ y1, hy1, hy1' ⟩ := ha
+                obtain ⟨ y2, hy2, hy2' ⟩ := hb
+                use y1 * x⁻¹ * x * y2
+                constructor
+                group
+                exact Subgroup.mul_mem H hy1 hy2
+                calc a * b
+                   = a * (x * y2 * x⁻¹) := by exact congrArg (HMul.hMul a) hy2'
+                  _= (x * y1 * x⁻¹) * (x * y2 * x⁻¹) := by exact congrFun (congrArg HMul.hMul hy1') (x * y2 * x⁻¹)
+                  _= x * (y1 * x⁻¹ * x * y2) * x⁻¹ := by group
+              }
 
 /- Now let's prove that a group acts on its own subgroups by conjugation. -/
 

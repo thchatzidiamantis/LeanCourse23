@@ -301,10 +301,33 @@ end LinearAlgebra
 
 /- # Exercises -/
 
-theorem units_ne_neg_self [Ring R] [CharZero R] (u : Rˣ) : u ≠ -u := by sorry
+theorem units_ne_neg_self [Ring R] [CharZero R] (u : Rˣ) : u ≠ -u := by
+{
+  by_contra h
+  have : 1 = -1 := by
+    {calc 1
+       = u * u⁻¹ := by exact (mul_inv_self u).symm
+      _= (- u) * u⁻¹ := by exact congrFun (congrArg HMul.hMul h) u⁻¹
+      _= - (u * u⁻¹) := by exact neg_mul u u⁻¹
+      _= -1 := by rw [@mul_inv_self]}
+  have : 0 = (1 : R) + (1 : R) := by
+  {
+    calc (0 : R)
+       = (-1 : R) + (1 : R) := by exact (add_left_neg 1).symm
+      _= (1 : R) + (1 : R) := by sorry
+  }
+  sorry
+}
 
 
-example (n m : ℤ) : span {n} ⊔ span {m} = span {gcd n m} := by sorry
+example (n m : ℤ) : span {n} ⊔ span {m} = span {gcd n m} := by
+{
+  ext u
+  constructor
+  · intro hu1
+    rw [mem_span_singleton]
+    sorry
+}
 
 example (n m : ℤ) : span {n} ⊓ span {m} = span {lcm n m} := by sorry
 
