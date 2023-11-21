@@ -52,7 +52,12 @@ example (x : ℝ) : DifferentiableAt ℝ sin x :=
 
 example (x : ℝ) :
     HasDerivAt (fun x ↦ Real.cos x + Real.sin x)
-    (Real.cos x - Real.sin x) x := by sorry
+    (Real.cos x - Real.sin x) x := by
+    rw [sub_eq_neg_add]
+    apply HasDerivAt.add
+    exact?
+    exact?
+
 
 
 
@@ -63,7 +68,19 @@ example (x : ℝ) :
 (normed) vector space. -/
 
 example (x : ℝ) : deriv (fun x ↦ ((Real.cos x) ^ 2, (Real.sin x) ^ 2)) x =
-    (- 2 * Real.cos x * Real.sin x, 2 * Real.sin x * Real.cos x) := by sorry
+    (- 2 * Real.cos x * Real.sin x, 2 * Real.sin x * Real.cos x) := by
+    apply HasDerivAt.deriv
+    refine HasDerivAt.prod ?h.hf1 ?h.hf2
+    · suffices : HasDerivAt (fun x ↦ cos x ^ 2)
+        ((2 * cos x) ^ 1 * (- sin x )) x
+      · simp at this
+        simp
+        exact this
+      apply?
+      exact hasDerivAt_cos x
+    · convert HasDerivAt.pow 2 ?_ using 3
+      · simp
+      · exact hasDerivAt_sin x
 
 /-
 Lean has the following names for intervals
@@ -213,7 +230,10 @@ example (f : E → F) (f' : E →L[𝕜] F) (x₀ : E) (hff' : HasFDerivAt f f' 
 
 variable {f g : E → F} {n : ℕ∞}
 example (hf : ContDiff 𝕜 n f) (hg : ContDiff 𝕜 n g) :
-    ContDiff 𝕜 n (fun x ↦ (f x, 2 • f x + g x)) := by sorry
+    ContDiff 𝕜 n (fun x ↦ (f x, 2 • f x + g x)) := by
+    refine ContDiff.prod hf ?hg
+    refine ContDiff.add ?hg.hf hg
+    exact ContDiff.const_smul 2 hf
 
 example : ContDiff 𝕜 0 f ↔ Continuous f := contDiff_zero
 
@@ -229,13 +249,24 @@ end NormedSpace
 /- # Exercises -/
 
 example (x : ℝ) :
-    deriv (fun x ↦ Real.exp (x ^ 2)) x = 2 * x * Real.exp (x ^ 2) := by sorry
+    deriv (fun x ↦ Real.exp (x ^ 2)) x = 2 * x * Real.exp (x ^ 2) := by
+    apply HasDerivAt.deriv
+    refine HasDerivAt.comp ?h1 ?h2
+
+
 
 /- If you have a continuous injective function `ℝ → ℝ` then `f` is monotone or antitone. This is a possible first step in proving that result.
 Prove this by contradiction using the intermediate value theorem. -/
 example {f : ℝ → ℝ} (hf : Continuous f) (h2f : Injective f) {a b x : ℝ}
-    (hab : a ≤ b) (h2ab : f a < f b) (hx : x ∈ Icc a b) : f a ≤ f x := by sorry
+    (hab : a ≤ b) (h2ab : f a < f b) (hx : x ∈ Icc a b) : f a ≤ f x := by
+    by_contra h' ; push_neg at h'
+    simp at hx ; obtain ⟨ hxa, hxb ⟩ := hx
+    have hfxb : ContinuousOn f (Icc x b) := by exact Continuous.continuousOn hf
+    have hfxb' : Icc (f x) (f b) ⊆ f '' Icc x b := by exact intermediate_value_Icc hxb hfxb
+    have : f a ∈ f '' Icc x b := by
+    {
 
+    }
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
   {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]

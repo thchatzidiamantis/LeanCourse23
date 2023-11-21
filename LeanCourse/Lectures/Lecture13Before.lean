@@ -33,7 +33,8 @@ example {a b : ℝ} (h : (0 : ℝ) ∉ [[a, b]]) : ∫ x in a..b, 1 / x = log (b
   integral_one_div h
 
 example (a b : ℝ) : ∫ x in a..b, exp (x + 3) = exp (b + 3) - exp (a + 3) := by
-  sorry
+  rw [@intervalIntegral.integral_comp_add_right]
+  exact integral_exp
 
 
 /- We have the fundamental theorem of calculus in Lean. -/
@@ -53,7 +54,13 @@ example (a b : ℝ) : ∫ x in a..b, 2 * x * exp (x ^ 2) =
   have h1 : ∀ x ∈ [[a, b]], HasDerivAt
     (fun x ↦ exp (x ^ 2))
     (2 * x * exp (x ^ 2)) x
-  · sorry
+  · intro x hx
+    rw [show 2 * x * exp (x ^ 2) = exp (x ^ 2) * (2 * x) by ring]
+    have := @HasDerivAt.comp
+    apply HasDerivAt.comp (h₂ := exp) (h := fun x ↦ x ^2)
+    exact?
+    convert hasDerivAt_pow 2 x
+    ring
   have h2 : IntervalIntegrable (fun x ↦ 2 * x * exp (x ^ 2)) volume a b
   · sorry
   sorry

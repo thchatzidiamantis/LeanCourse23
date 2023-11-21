@@ -38,7 +38,8 @@ lemma exercise6_1 {ι α : Type*} {p : ι → Prop} {q : Prop} {a b : α}
     (∀ᶠ i in L, p i ↔ q) ↔
     Tendsto (fun i ↦ if p i then a else b) L (if q then F else G) := by
   have hab : a ≠ b
-  · sorry
+  · by_contra hab'
+    rw
   rw [tendsto_iff_eventually]
   sorry
 
