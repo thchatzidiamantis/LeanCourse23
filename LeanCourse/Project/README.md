@@ -44,7 +44,7 @@ During class I already discussed searching using the name (using autocomplete or
 * You are allowed to ask any AI for help. I do not necessarily recommend using them,
   often their suggestions are not very helpful.
   * ChatGPT knows some Lean, but it bad at proofs and often suggests outdated Lean 3 syntax
-  * Github copilot is occasionally useful
+  * Github copilot is occasionallζχy useful
 
 ### Writing definitions
 
