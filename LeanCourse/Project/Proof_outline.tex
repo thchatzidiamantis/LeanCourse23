@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,amscd}
+\usepackage{multirow,booktabs}
+\usepackage[table]{xcolor}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{mathrsfs}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{calc}
+\usepackage{multicol}
+\usepackage{cancel}
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage[margin=3cm]{geometry}
+\usepackage{amsmath}
+\newlength{\tabcont}
+\setlength{\parindent}{0.0in}
+\setlength{\parskip}{0.05in}
+\usepackage{empheq}
+\usepackage{framed}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{tikz-cd}
+\swapnumbers
+\colorlet{shadecolor}{orange!15}
+\parindent 0in
+\parskip 12pt
+\geometry{margin=1in, headsep=0.25in}
+\theoremstyle{definition}
+\newtheorem{defin}{Definition}
+\newtheorem{prop}[defin]{Proposition}
+\newtheorem{lem}[defin]{Lemma}
+\newtheorem{thm}[defin]{Theorem}
+\newtheorem{rem}{remark}[defin]
+
+\title{A (hopefully formalization-friendly) Proof of Fodor's Lemma}
+\author{Theofanis Chatzidiamantis Christoforidis}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{defin}
+    Let $\lambda$ be a limit ordinal and $C\subseteq \lambda$ a set.
+    \begin{enumerate} \itemsep0.2em
+        \item[i.]  $C$ is called \textbf{unbounded} in $\lambda$ if $sup(C\cap \lambda)=\lambda$.
+        \item[ii.] $C$ is called \textbf{closed} in $\lambda$ if for every $\alpha < \lambda$,
+        if $C\cap\alpha\neq\varnothing$, then $sup(C\cap\alpha)=\alpha$.
+        \item[iii.] $C$ is called \textbf{club} in $\lambda$ if it is closed and unbounded
+        in $\lambda$.
+    \end{enumerate}
+\end{defin}
+
+\begin{defin}
+    Let $\lambda$ be a limit ordinal and $S\subseteq \lambda$ a set. $S$ is called
+    \textbf{stationary} in $\lambda$ if for every club set $C\subseteq\lambda$,
+    $S\cap C\neq\varnothing$.
+\end{defin}
+
+Our goal is to give a self-contained (assuming the contents of Mathlib) proof of the following:
+
+\begin{thm}[Fodor's Lemma]
+   Let $\kappa$ be an uncountable regular cardinal, $S\subseteq\kappa$ be a
+   stationary set and let $f:S\rightarrow \kappa$ be an ordinal function such
+   that $f(\alpha)<\alpha$ for all $\alpha\in S, \alpha>0$. Then there is a
+   stationary set $T\subset S$ and some $\theta <\kappa$ such that
+   $f(\alpha)=\theta \ \text{for all} \ \alpha\in T.$
+\end{thm}
+
+\begin{thebibliography}{}
+    \bibitem{} Jech, Thomas. Set Theory: The Third Millennium Edition, Springer, 2003.
+    \bibitem{} Schimmerling, Ernest. A Course on Set Theory, Cambridge University Press, 2011.
+\end{thebibliography}
+
+\end{document}
