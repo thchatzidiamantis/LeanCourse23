@@ -23,6 +23,9 @@
 \usepackage[most]{tcolorbox}
 \usepackage{xcolor}
 \usepackage{tikz-cd}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=purple}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
 \swapnumbers
 \colorlet{shadecolor}{orange!15}
 \parindent 0in
@@ -33,7 +36,7 @@
 \newtheorem{prop}[defin]{Proposition}
 \newtheorem{lem}[defin]{Lemma}
 \newtheorem{thm}[defin]{Theorem}
-\newtheorem{rem}{remark}[defin]
+\newtheorem{rem}{Remark}[defin]
 
 \title{A (hopefully formalization-friendly) Proof of Fodor's Lemma}
 \author{Theofanis Chatzidiamantis Christoforidis}
@@ -55,6 +58,12 @@
     \end{enumerate}
 \end{defin}
 
+\begin{rem}
+    Equivalently, $C\subseteq\lambda$ is unbounded in $\lambda$ if for all $\alpha < \lambda$, there is
+    a $\beta\in C$ such that $\alpha<\beta$.
+    \todo{This may be an easier definition to work with.}
+\end{rem}
+
 \begin{defin}
     Let $\lambda$ be a limit ordinal and $S\subseteq \lambda$ a set. $S$ is called
     \textbf{stationary} in $\lambda$ if for every club set $C\subseteq\lambda$,
@@ -70,6 +79,23 @@ Our goal is to give a self-contained (assuming the contents of Mathlib) proof of
    stationary set $T\subset S$ and some $\theta <\kappa$ such that
    $f(\alpha)=\theta \ \text{for all} \ \alpha\in T.$
 \end{thm}
+
+\begin{lem}
+    The intersection of two club sets is club.
+\end{lem}
+
+\begin{proof}
+    Let $C,D\subseteq\lambda$ be club in $\lambda$.
+    \begin{itemize}
+        \item To show $C\cap D$ is closed,
+    \end{itemize}
+\end{proof}
+
+\begin{defin}
+    Let $\kappa$ be a cardinal and let $(C_\alpha)_{\alpha <\kappa}$ be a sequence of subsets of
+    $\kappa$. The \textbf{diagonal intersection} of $(C_\alpha)_{\alpha <\kappa}$ is defined to be
+    $$\Delta_{\alpha<\kappa}C_\alpha:=\{\beta <\kappa\ |\ \beta \in C_{\theta}\ \forall\theta<\beta\}$$
+\end{defin}
 
 \begin{thebibliography}{}
     \bibitem{} Jech, Thomas. Set Theory: The Third Millennium Edition, Springer, 2003.
