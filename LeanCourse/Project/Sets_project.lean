@@ -90,25 +90,54 @@ lemma int_two_club (C D : Set Ordinal) (o : Ordinal) (hC: club_in C o) (hD : clu
       · specialize hD2 s hso hsD' ; exact Set.mem_of_eq_of_mem hsD hD2
   }
 
-theorem int_lt_card_club (κ l : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : κ.ord ≥ (Cardinal.aleph 1).ord)
+theorem int_lt_card_club (κ l : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : ℵ₀ < κ)
   (hl : l < κ) (C : lt_Card l → Set Ordinal)  :
   club_in (⋂ i, C i) κ.ord := by
 {
   sorry
 }
 
-theorem diag_int_club (κ : Cardinal) (C : Ordinal → Set Ordinal)
+theorem diag_int_club (κ : Cardinal) (hκ : ℵ₀ < κ) (C : Ordinal → Set Ordinal)
   (hC : ∀ o : Ordinal, club_in (C o) κ.ord) :
   club_in (diag_int κ C) κ.ord := by
 {
   constructor
-  · sorry
-  · sorry
+  · unfold sub_unbounded_in ; unfold unbounded_in
+    constructor
+    · refine Cardinal.ord_isLimit ?left.left.co ; exact LT.lt.le hκ
+    · intro a ha
+      sorry
+  · intro b hb1 hb2
+    set α := sSup (Ordinal_res (diag_int κ C) b)
+    by_contra h'
+    have hακ : α < κ.ord := by sorry
+    have hα : sSup (Ordinal_res (diag_int κ C) α) = α := by
+    {
+      apply csSup_eq_of_forall_le_of_forall_lt_exists_gt
+      · sorry
+      · intro a ha ; unfold Ordinal_res at ha ; exact ha.2
+      · intro w hw ; sorry
+    }
+    unfold diag_int at *
+    have : ∃ θ : Ordinal, θ < α ∧ α ∉ C θ := by
+    {
+      sorry
+    }
+    obtain ⟨ θ, hθ₁, hθ₂  ⟩ := this
+    by_cases Ordinal_res (C θ) α ≠ ∅
+    · have hαθ : sSup (Ordinal_res (C θ) α) ∈ C θ := by
+      {
+        specialize hC θ ; unfold club_in at hC ; obtain ⟨ hC₁, hC₂ ⟩ := hC
+        specialize hC₂ α hακ h ; exact hC₂
+      }
+      sorry
+    push_neg at h
+    sorry
 }
 
 /--Fodor's Lemma: A regressive function on a stationary set is constant on a stationary subset of its domain-/
 theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
-  (hκ₂ : κ.ord ≥ (Cardinal.aleph 1).ord) (hS : stationary_in S κ.ord) (f : Ordinal → Ordinal)
+  (hκ₂ : ℵ₀ < κ) (hS : stationary_in S κ.ord) (f : Ordinal → Ordinal)
   (hf : Ord_fun_regressive S f) :
     ∃ θ: Ordinal, stationary_in (f⁻¹' ({θ})) κ.ord := by
   {
@@ -122,7 +151,7 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
         · apply (sub_Ordinal_iff_res_eq C (Cardinal.ord κ)).2
           intro c hc
           simp at hc ; rw [diag_int] at hc ; simp at hc ;  exact LT.lt.le hc.1
-        · refine diag_int_club κ C' ?hC'
+        · refine diag_int_club κ hκ₂ C' ?hC'
           intro o
           specialize hC' o
           exact hC'.1.2
