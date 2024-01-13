@@ -1,0 +1,101 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage{kerkis}
+\usepackage{multicol}
+\usepackage{paralist}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\swapnumbers
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{tikz-cd}
+\usepackage{graphicx}
+
+\theoremstyle{definition}
+\newtheorem{defin}[subsection]{Definition}
+\newtheorem{prop}[subsection]{Proposition}
+\newtheorem{cor}[subsection]{Corollary}
+\newtheorem{lem}[subsection]{Lemma}
+\newtheorem{thm}[subsection]{Theorem}
+\newtheorem{rem}[subsection]{Remark}
+\newtheorem{ex}[subsection]{Example}
+
+\title{Formalization of the Proof of Fodor's Lemma}
+\author{Theofanis Chatzidiamantis Christoforidis}
+\date{January 2024}
+
+\begin{document}
+
+\maketitle
+
+\section{The Math}
+
+\begin{frame}{Basic Definitions}
+    Let $o$ be a limit ordinal and $C \subseteq o$ a set.
+    \begin{defin}
+        \begin{enumerate} \itemsep0.2em
+        \item[i.]  $C$ is called \textbf{unbounded} in $o$ if $\sup (C\cap o)=o$.
+        \pause
+        \item[ii.] $C$ is called \textbf{closed} in $o$ if for every $\alpha < o$, if $C\cap\alpha\neq\varnothing$, then $\sup (C\cap o)\in C$.
+        \pause
+        \item[iii.] $C$ is called \textbf{club} in $o$ if it is closed and unbounded in $o$.
+        \end{enumerate}
+    \end{defin}
+    \pause
+    \begin{rem}
+        Equivalently, $C$ is unbounded in $o$ if for every $\alpha < o$, there is a $\beta\in C$ such that $\alpha<\beta$.
+    \end{rem}
+\end{frame}
+
+\begin{frame}{Basic Definitions}
+    \begin{defin}
+    Let $o$ be a limit ordinal and $S\subseteq o$ a set. $S$ is called \textbf{stationary} in $o$ if for every club set $C\subseteq o$, $S\cap C\neq\varnothing$.
+\end{defin}
+\pause
+\begin{defin}
+    Let $f:C\to D$ be a function, where $C$ and $D$ are sets of ordinals. $f$ is callted \textbf{regressive} if for every $0 < \alpha \in C$, $f(\alpha) < \alpha$.
+\end{defin}
+\end{frame}
+
+\begin{frame}{The Theorem}
+    Our goal is to prove the following:
+    \begin{thm}[Fodor's Lemma]
+       Let $\kappa$ be an uncountable regular cardinal, $S\subseteq\kappa$ a stationary set and let $f:S\rightarrow \kappa$ be a regressive function. Then there is an ordinal $\theta <\kappa$ such that $f^{-1}(\{\theta\})$ is stationary in $\kappa$.
+    \end{thm}
+\end{frame}
+
+\section{Translating to Lean}
+%Say how you did strict res
+%Say why we are taking function to the type Ordinal and restricting afterwards, set theory vs type theory
+%Constructivists avert your eyes
+
+\begin{frame}{Sets and Ordinals are different types. How can they interact?}
+    \begin{itemize}
+        \item In set theory, everyting is a set, including cardinals and ordinals. This is not true in the type-theoretic framework we are working with. \pause
+        \item With this in mind, our main objects of study here are of type \textbf{Set Ordinal}. \pause
+        \item This makes sense: recall that in ZFC, an ordinal contains every ordinal strictly smaller than itself.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Sets and Ordinals are different types. How can they interact?}
+    fdsafdsaf
+\end{frame}
+
+\begin{frame}{Sets and Ordinals are different types. How can they interact?}
+    fdasfdaf
+\end{frame}
+
+\begin{frame}{Working with supremums is hard.}
+    fdsafda
+\end{frame}
+
+\section{Some Proof Examples}
+
+\begin{frame}{gdsjhfhkdjs}
+
+\end{frame}
+
+\end{document}
