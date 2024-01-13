@@ -350,17 +350,29 @@ noncomputable def unbounded_choice {C : Set Ordinal} {o : Ordinal} (a : Ordinal)
     if ha : a < o then Exists.choose (hC.2 a ha)
     else 0
 
-noncomputable def nested_unbounded_choice {C D : Set Ordinal} {o a: Ordinal}
-  (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) : ℕ → Ordinal × Ordinal
-  | 0 => (unbounded_choice a hC, unbounded_choice a hD)
-  | n + 1 => (unbounded_choice (nested_unbounded_choice hC hD ha n).2 hC,
-    unbounded_choice (nested_unbounded_choice hC hD ha n).1 hD)
-
 lemma unbounded_choice_lt {C : Set Ordinal} {o a: Ordinal}
   (hC: unbounded_in C o) (ha : a < o) : unbounded_choice a hC < o := by
     unfold unbounded_choice
     simp [ha]
     exact (Exists.choose_spec (hC.2 a ha)).1
+
+lemma unbounded_choice_gt {C : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (ha : a < o) : a < unbounded_choice a hC := by
+    unfold unbounded_choice
+    simp [ha]
+    exact (Exists.choose_spec (hC.2 a ha)).2.2
+
+lemma unbounded_choice_in {C : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (ha : a < o) : (unbounded_choice a hC) ∈ C := by
+    unfold unbounded_choice
+    simp [ha]
+    exact (Exists.choose_spec (hC.2 a ha)).2.1
+
+noncomputable def nested_unbounded_choice {C D : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) : ℕ → Ordinal × Ordinal
+  | 0 => (unbounded_choice a hC, unbounded_choice a hD)
+  | n + 1 => (unbounded_choice (nested_unbounded_choice hC hD ha n).2 hC,
+    unbounded_choice (nested_unbounded_choice hC hD ha n).1 hD)
 
 lemma nested_unbounded_choice_lt {C D : Set Ordinal} {o a: Ordinal}
   (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) (n : ℕ) :
@@ -376,6 +388,45 @@ lemma nested_unbounded_choice_lt {C D : Set Ordinal} {o a: Ordinal}
         apply unbounded_choice_lt hD ih.1
   }
 
+lemma nested_unbounded_choice_gt_zero {C D : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) :
+  a < (nested_unbounded_choice hC hD ha 0).1 ∧ a < (nested_unbounded_choice hC hD ha 0).2:= by
+      exact ⟨ unbounded_choice_gt hC ha, unbounded_choice_gt hD ha ⟩
+
+lemma nested_unbounded_choice_in {C D : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) (n : ℕ) :
+  (nested_unbounded_choice hC hD ha n).1 ∈ C ∧ (nested_unbounded_choice hC hD ha n).2 ∈ D := by
+  {
+    induction n
+    case zero =>
+      unfold nested_unbounded_choice
+      constructor
+      · exact unbounded_choice_in hC ha
+      · exact unbounded_choice_in hD ha
+    case succ k _ =>
+      constructor
+      · exact unbounded_choice_in hC (nested_unbounded_choice_lt hC hD ha k).2
+      · exact unbounded_choice_in hD (nested_unbounded_choice_lt hC hD ha k).1
+  }
+
+lemma nested_unbounded_choice_alt {C D : Set Ordinal} {o a: Ordinal}
+  (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) (n : ℕ) :
+  (nested_unbounded_choice hC hD ha n).1 < (nested_unbounded_choice hC hD ha (n + 1)).2
+  ∧ (nested_unbounded_choice hC hD ha n).2 < (nested_unbounded_choice hC hD ha (n + 1)).1:= by
+  {
+    induction n
+    case zero =>
+      unfold nested_unbounded_choice
+      constructor
+      · exact unbounded_choice_gt hD (unbounded_choice_lt hC ha)
+      · exact unbounded_choice_gt hC (unbounded_choice_lt hD ha)
+    case succ k _ =>
+      unfold nested_unbounded_choice
+      constructor
+      · exact unbounded_choice_gt hD (unbounded_choice_lt hC (nested_unbounded_choice_lt hC hD ha k).2)
+      · exact unbounded_choice_gt hC (unbounded_choice_lt hD (nested_unbounded_choice_lt hC hD ha k).1)
+  }
+
 theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
   (hκ₂ : Cardinal.aleph0 < κ) (hC: club_in C κ.ord) (hD : club_in D κ.ord) :
   unbounded_in (C ∩ D) κ.ord := by
@@ -389,13 +440,12 @@ theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
           set f := fun n ↦ (nested_unbounded_choice hC.1 hD.1 ha n).1 ; use f
           set g := fun n ↦ (nested_unbounded_choice hC.1 hD.1 ha n).2 ; use g
           intro n
-          refine ⟨ ?_, ?_, ?_, ?_, ?_, ?_⟩
-          · sorry
-          · sorry
-          · sorry
-          · sorry
-          · sorry
-          · sorry
+          refine ⟨ ?_, ?_, ?_, ?_, ?_, (nested_unbounded_choice_lt hC.1 hD.1 ha n).1⟩
+          · exact (nested_unbounded_choice_gt_zero hC.1 hD.1 ha).1
+          · exact (nested_unbounded_choice_alt hC.1 hD.1 ha n).1
+          · exact (nested_unbounded_choice_alt hC.1 hD.1 ha n).2
+          · exact (nested_unbounded_choice_in hC.1 hD.1 ha n).1
+          · exact (nested_unbounded_choice_in hC.1 hD.1 ha n).2
         }
         obtain ⟨ f, g, hfg ⟩ := hfg
         have hf02 : ∀ n : ℕ , f n < f (n + 2) := by
@@ -406,7 +456,7 @@ theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
           have h₁₂ : g (n + 1) < f (n + 2) := by
             specialize hfg (n + 1) ; exact hfg.2.2.1
           exact lt_trans h₀₁ h₁₂
-        } /-Make these lemmas, they are identical-/
+        } /-Make these one conjunction provable by a previous unbounded_choice lemma-/
         have hg02 : ∀ n : ℕ , g n < g (n + 2) := by
         {
           intro n
@@ -524,7 +574,6 @@ theorem int_two_club (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
     constructor
     · exact hCD
     · obtain ⟨ _ , hC2 ⟩ := hC ; obtain ⟨ _, hD2 ⟩ := hD
-      --unfold strict_Ordinal_res at *
       intro b hb1 hb2
       set s := sSup (strict_Ordinal_res (C ∩ D) b)
       by_contra h'
@@ -541,15 +590,6 @@ theorem int_two_club (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
       }
       have hsCD₀ : Set.Nonempty (strict_Ordinal_res (C ∩ D) s) := by
         rw [← hsCD'] ; exact hsCD₀'
-      /-{
-        obtain ⟨ c, hc ⟩ := hb2 ; use c ; constructor
-        · exact hc.1
-        · apply lt_csSup_of_lt
-          · exact strict_Ordinal_res_bdd (C ∩ D) b
-          · sorry
-          · sorry
-          · sorry
-      }-/
       have hsCD : s = sSup (strict_Ordinal_res (C ∩ D) s) := by
       {
         refine csSup_eq_csSup_of_forall_exists_le ?_ ?_
@@ -782,15 +822,13 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
 /-
 To do:
 
-
+• Make as many lemmas as possible for (nested_)unbounded_choice
 • Do the res_eq_strict_res theorem with the ' assumption
 • make some things in theorems implicit
 • lemma : If sSup is not in the set, then there is a strictly smaller element in the set
-  Fodor's lemma holds for this one as well
 • Find a way to construct the f and g in the two set intersection proof
 • Get induction to work for int_lt_card_club
 • diag_int_club unboundedness proof
 • cleanup part 1 : Nested constructors
-• cleanup part 2 : Every definition should be followed by some obvious lemmas
-• cleanup part 3 : Naming
+• cleanup part 2 : Naming
  -/
