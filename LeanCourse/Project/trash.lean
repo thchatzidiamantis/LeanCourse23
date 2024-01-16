@@ -371,6 +371,18 @@ theorem int_lt_card_club (κ μ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : Ca
   · sorry
 }
 
+/-Starting with cardinals, with l > 0 and Iio:
+  · exfalso
+    exact LT.lt.false hl
+  · by_cases a✝ = 1
+    · specialize hC 0
+      have h1 : Set.Iio (1 : Ordinal) = {0} := by sorry
+      have : (⋂ i : Set.Iio (1 : Ordinal), C i) = C 0 := by
+        sorry
+      sorry
+    · sorry
+  · sorry-/
+
 theorem diag_int_club (κ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
   (C : Ordinal → Set Ordinal) (hC : ∀ o : Ordinal, club_in (C o) κ.ord) :
   club_in (diag_int κ C) κ.ord := by
