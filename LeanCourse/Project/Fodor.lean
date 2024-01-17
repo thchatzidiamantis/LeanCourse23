@@ -317,16 +317,6 @@ def club_in (C : Set Ordinal) (o : Ordinal) : Prop :=
   unbounded_in C o ∧ (∀ b : Ordinal, b < o → Set.Nonempty (strict_Ordinal_res C b) →
   sSup (strict_Ordinal_res C b) ∈ C)
 
-def club_in' (C : Set Ordinal) (o : Ordinal) : Prop :=
-  unbounded_in C o ∧ (∀ b : Ordinal, b < o → Set.Nonempty (Ordinal_res C b) → sSup (Ordinal_res C b) ∈ C)
-
-/-I am pretty sure I can also prove the converse
-theorem club'_of_club {C : Set Ordinal} {o : Ordinal} : club_in C o → club_in' C o := by
-{
-  · intro hC
-    sorry
-} -/
-
 /--A stationary set is a subset of an ordinal that intersects every club sets.-/
 def stationary_in (S : Set Ordinal) (o : Ordinal) : Prop :=
   ∀ C : Set Ordinal, (sub_Ordinal C o ∧ club_in C o) → Set.Nonempty (S ∩ C)
@@ -686,15 +676,20 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
             apply le_of_lt ; exact Order.lt_succ_iff.mpr hi
           · refine hx (Order.succ d) ?_
             exact Eq.le rfl
-        · intro hx ; simp [Set.iInter_coe_set] at *
-          sorry
+        · intro hx ; simp [Set.iInter_coe_set] at * ; obtain ⟨ hx₁, hx₂ ⟩ := hx
+          intro i hi
+          rw [@Order.le_succ_iff_eq_or_le] at hi
+          obtain hi₁|hi₂ := hi
+          · rw [← hi₁] at hx₂ ; exact hx₂
+          · exact hx₁ i hi₂
       }
     rw [this]
     apply int_two_club
-    rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂ --Make this a lemma
-    apply hd
-    rw [← @Cardinal.lt_ord] at hlκ --Lemma? (succ c < κ → c < κ)
-    sorry
+    · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂ --
+    · apply hd
+      rw [Ordinal.card_succ] at hlκ
+      have hd1 : d.card ≤ d.card + 1 := by exact le_self_add
+      exact lt_of_le_of_lt hd1 hlκ
     rw [← @Cardinal.lt_ord] at hlκ
     refine  hC (Order.succ d) hlκ
   · sorry
@@ -1070,13 +1065,8 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
 /-
 To do:
 
-• Make as many lemmas as possible for (nested_)unbounded_choice
-• Do the res_eq_strict_res theorem with the ' assumption
+• Write a lemma that does the conversion from the general case to the regular cardinal case
 • lemma : If sSup is not in the set, then there is a strictly smaller element in the set
 • Get induction to work for int_lt_card_club
-• diag_int_club unboundedness proof
-• cleanup part 1 : Nested constructors
-• cleanup part 2 : Naming
 • Maybe include examplpes of stationary sets?
-• Generalize : Instead of regularity, work below cf(κ)
  -/
