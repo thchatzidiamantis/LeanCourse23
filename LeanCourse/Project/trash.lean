@@ -351,7 +351,7 @@ lemma int_two_club (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
       · specialize hD2 s hsκ hsD₀ ; exact Set.mem_of_eq_of_mem hsD hD2
   }
 
-theorem int_lt_card_club (κ μ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
+-/theorem int_lt_card_club (κ μ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
   (hμ : μ.ord > 0) (hμκ : μ < κ) (C : Ordinal → Set Ordinal) (hC : ∀ i : Ordinal, club_in (C i) κ.ord) :
   club_in (⋂ i : Set.Iio μ.ord, C i) κ.ord := by
 {

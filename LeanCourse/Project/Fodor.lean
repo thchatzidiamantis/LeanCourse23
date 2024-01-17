@@ -332,11 +332,11 @@ def stationary_in (S : Set Ordinal) (o : Ordinal) : Prop :=
   ∀ C : Set Ordinal, (sub_Ordinal C o ∧ club_in C o) → Set.Nonempty (S ∩ C)
 
 /--The diagonal intersection of a family.-/
-def diag_int (κ : Cardinal) (C : Ordinal → Set Ordinal) : Set Ordinal :=
-  {β : Ordinal | β < κ.ord ∧ ∀ θ : Ordinal, θ < β → β ∈ C θ}
+def diag_int (o : Ordinal) (C : Ordinal → Set Ordinal) : Set Ordinal :=
+  {β : Ordinal | β < o ∧ ∀ θ : Ordinal, θ < β → β ∈ C θ}
 
-lemma diag_int_of_int (κ : Cardinal) (C : Ordinal → Set Ordinal) :
-  diag_int κ C = diag_int κ (fun o ↦ (⋂ i : Set.Iic o, C (i : Ordinal))) := by
+lemma diag_int_of_int (o : Ordinal) (C : Ordinal → Set Ordinal) :
+  diag_int o C = diag_int o (fun a ↦ (⋂ i : Set.Iic a, C (i : Ordinal))) := by
   {
     ext x ; constructor
     · intro ⟨ hx₁, hx₂ ⟩
@@ -356,34 +356,39 @@ lemma diag_int_of_int (κ : Cardinal) (C : Ordinal → Set Ordinal) :
 def Ord_fun_regressive (C : Set Ordinal) (f : Ordinal → Ordinal) : Prop :=
   ∀ c : Ordinal, c ∈ C → f c < c
 
-noncomputable def unbounded_choice {C : Set Ordinal} {o : Ordinal} (a : Ordinal)
-  (hC: unbounded_in C o) : Ordinal :=
-    if ha : a < o then Exists.choose (hC.2 a ha)
+noncomputable instance Decidable_unbounded {C : Set Ordinal} {o : Ordinal} : Decidable (unbounded_in C o) := by
+  exact Classical.dec (unbounded_in C o)
+
+
+noncomputable def unbounded_choice (C : Set Ordinal) (o : Ordinal) (a : Ordinal) : Ordinal :=
+    if hC: (unbounded_in C o) then
+      if ha : a < o then Exists.choose (hC.2 a ha)
+      else 0
     else 0
 
 lemma unbounded_choice_lt {C : Set Ordinal} {o a: Ordinal}
-  (hC: unbounded_in C o) (ha : a < o) : unbounded_choice a hC < o := by
+  (hC: unbounded_in C o) (ha : a < o) : unbounded_choice C o a < o := by
     unfold unbounded_choice
-    simp [ha]
+    simp [hC, ha]
     exact (Exists.choose_spec (hC.2 a ha)).1
 
 lemma unbounded_choice_gt {C : Set Ordinal} {o a: Ordinal}
-  (hC: unbounded_in C o) (ha : a < o) : a < unbounded_choice a hC := by
+  (hC: unbounded_in C o) (ha : a < o) : a < unbounded_choice C o a := by
     unfold unbounded_choice
-    simp [ha]
+    simp [hC, ha]
     exact (Exists.choose_spec (hC.2 a ha)).2.2
 
 lemma unbounded_choice_in {C : Set Ordinal} {o a: Ordinal}
-  (hC: unbounded_in C o) (ha : a < o) : (unbounded_choice a hC) ∈ C := by
+  (hC: unbounded_in C o) (ha : a < o) : (unbounded_choice C o a) ∈ C := by
     unfold unbounded_choice
-    simp [ha]
+    simp [hC, ha]
     exact (Exists.choose_spec (hC.2 a ha)).2.1
 
 noncomputable def nested_unbounded_choice {C D : Set Ordinal} {o a: Ordinal}
   (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) : ℕ → Ordinal × Ordinal
-  | 0 => (unbounded_choice a hC, unbounded_choice a hD)
-  | n + 1 => (unbounded_choice (nested_unbounded_choice hC hD ha n).2 hC,
-    unbounded_choice (nested_unbounded_choice hC hD ha n).1 hD)
+  | 0 => (unbounded_choice C o a, unbounded_choice D o a)
+  | n + 1 => (unbounded_choice C o (nested_unbounded_choice hC hD ha n).2,
+    unbounded_choice D o (nested_unbounded_choice hC hD ha n).1)
 
 lemma nested_unbounded_choice_lt {C D : Set Ordinal} {o a: Ordinal}
   (hC: unbounded_in C o) (hD : unbounded_in D o) (ha : a < o) (n : ℕ) :
@@ -395,8 +400,7 @@ lemma nested_unbounded_choice_lt {C D : Set Ordinal} {o a: Ordinal}
     case succ k ih =>
       constructor
       · exact unbounded_choice_lt hC ih.2
-      · unfold nested_unbounded_choice
-        apply unbounded_choice_lt hD ih.1
+      · apply unbounded_choice_lt hD ih.1
   }
 
 lemma nested_unbounded_choice_gt_zero {C D : Set Ordinal} {o a: Ordinal}
@@ -438,15 +442,15 @@ lemma nested_unbounded_choice_alt {C D : Set Ordinal} {o a: Ordinal}
       · exact unbounded_choice_gt hC (unbounded_choice_lt hD (nested_unbounded_choice_lt hC hD ha k).1)
   }
 
-theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
-  (hκ₂ : Cardinal.aleph0 < κ) (hC: club_in C κ.ord) (hD : club_in D κ.ord) :
-  unbounded_in (C ∩ D) κ.ord := by
+theorem int_two_club_unbounded (C D : Set Ordinal) (o : Ordinal)
+  (hocof : Cardinal.aleph0 < o.cof) (hC: club_in C o) (hD : club_in D o) :
+  unbounded_in (C ∩ D) o := by
   {
     · constructor
       · exact hC.1.1
       · intro a ha
         have hfg : ∃ f g : ℕ → Ordinal, ∀ n : ℕ, a < f 0 ∧  f (n) < g (n + 1) ∧
-          g (n) < f (n + 1) ∧ f n ∈ C ∧ g n ∈ D ∧ f n < κ.ord := by
+          g (n) < f (n + 1) ∧ f n ∈ C ∧ g n ∈ D ∧ f n < o := by
         {
           set f := fun n ↦ (nested_unbounded_choice hC.1 hD.1 ha n).1 ; use f
           set g := fun n ↦ (nested_unbounded_choice hC.1 hD.1 ha n).2 ; use g
@@ -500,12 +504,12 @@ theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
               exact LT.lt.le h
         }
         set α := sSup (Set.range f)
-        have hα : α < κ.ord := by
+        have hα : α < o := by
         {
-          have hn : ∀ n : ℕ, f n < κ.ord := by
+          have hn : ∀ n : ℕ, f n < o := by
             intro n ; specialize hfg n
-            exact hfg.2.2.2.2.2 -- f n < κ.ord
-          exact Cardinal.sup_lt_ord_lift_of_isRegular hκ₁ hκ₂ hn
+            exact hfg.2.2.2.2.2 -- f n < o
+          apply Ordinal.sup_lt_ord_lift hocof hn
         }
         have hCα₁ : α = sSup (strict_Ordinal_res C α) := by
         {
@@ -574,11 +578,11 @@ theorem int_two_club_unbounded (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
         exact LT.lt.trans_le hf0' hf0
   }
 
-theorem int_two_club (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
-  (hκ₂ : Cardinal.aleph0 < κ) (hC: club_in C κ.ord) (hD : club_in D κ.ord) :
-  club_in (C ∩ D) κ.ord := by
+theorem int_two_club (C D : Set Ordinal) (o : Ordinal)
+  (hκ : Cardinal.aleph0 < o.cof) (hC: club_in C o) (hD : club_in D o) :
+    club_in (C ∩ D) o := by
   {
-    obtain hCD := int_two_club_unbounded C D κ hκ₁ hκ₂ hC hD
+    obtain hCD := int_two_club_unbounded C D o hκ hC hD
     constructor
     · exact hCD
     · obtain ⟨ _ , hC2 ⟩ := hC ; obtain ⟨ _, hD2 ⟩ := hD
@@ -589,7 +593,7 @@ theorem int_two_club (C D : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.IsRegular)
         exact res_eq_strict_res_iff.1 h'
       have hsb : s ≤ b := by
         apply csSup_le' ; exact strict_Ordinal_res_bdd' (C ∩ D) b
-      have hsκ : s < κ.ord := by exact lt_of_le_of_lt hsb hb1
+      have hsκ : s < o := by exact lt_of_le_of_lt hsb hb1
       have hsCD₀' : Set.Nonempty (Ordinal_res (C ∩ D) s) := by
       {
         obtain ⟨ c, hc ⟩ := hb2 ; use c ; constructor
@@ -658,7 +662,8 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
     club_in (⋂ i : Set.Iic l, (C i)) κ.ord := by
 {
   induction l using Ordinal.limitRecOn
-  · have h : (⋂ i : Set.Iic (0 : Ordinal), (C i)) = C 0 := by --there has to be a simpler way to do this
+  case H₁ =>
+    have h : (⋂ i : Set.Iic (0 : Ordinal), (C i)) = C 0 := by --there has to be a simpler way to do this
     {
       ext x ; constructor
       · intro hx
@@ -669,34 +674,140 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
         exact hx
     }
     rw [h] ; exact hC 0 (Cardinal.IsRegular.ord_pos hκ₁)
-  · sorry --how do I make the induction hypotheses appear?
+  case H₂ d hd =>
+    have : (⋂ i : Set.Iic (Order.succ d), (C i)) = --Make this a lemma
+      (⋂ i : Set.Iic d, (C i)) ∩ (C (Order.succ d)) :=by
+      {
+        ext x ; constructor
+        · intro hx ; simp [Set.iInter_coe_set] at *
+          constructor
+          · intro i hi
+            refine hx i ?_
+            apply le_of_lt ; exact Order.lt_succ_iff.mpr hi
+          · refine hx (Order.succ d) ?_
+            exact Eq.le rfl
+        · intro hx ; simp [Set.iInter_coe_set] at *
+          sorry
+      }
+    rw [this]
+    apply int_two_club
+    rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂ --Make this a lemma
+    apply hd
+    rw [← @Cardinal.lt_ord] at hlκ --Lemma? (succ c < κ → c < κ)
+    sorry
+    rw [← @Cardinal.lt_ord] at hlκ
+    refine  hC (Order.succ d) hlκ
   · sorry
 }
 
-noncomputable def diag_unbounded_choice {a b : Ordinal}
-  (C : Ordinal → Set Ordinal) (hC₁ : ∀ o : Ordinal, o < a → unbounded_in (C o) a)
-  (h : 0 < a) (hb : b < a) : ℕ → Ordinal
-  | 0 => unbounded_choice b (hC₁ 0 h)
-  | n + 1 => unbounded_choice (diag_unbounded_choice C hC₁ h hb n)
-                (hC₁ (diag_unbounded_choice C hC₁ h hb n) ?_)
-/- Need : diag_unbounded_choice n+1 ∈ (C diag_unbounded_choice n)-/
+/-Variation of the other choice function Note the order swap between a and b-/
+noncomputable def diag_unbounded_choice (C : Ordinal → Set Ordinal) (a b : Ordinal) : ℕ → Ordinal
+  | 0 => unbounded_choice (C 0) b a
+  | n + 1 => unbounded_choice (C (diag_unbounded_choice C a b n)) b (diag_unbounded_choice C a b n)
 
-theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
-  (C : Ordinal → Set Ordinal) (hC : ∀ o : Ordinal, o < κ.ord → club_in (C o) κ.ord)
-  (hCsub : ∀ a o : Ordinal, a < o → C o ⊆ C a) :
-    unbounded_in (diag_int κ C) κ.ord := by
+lemma diag_unbounded_choice_lt (C : Ordinal → Set Ordinal) (a b : Ordinal)
+  (hab : a < b) (h₀ : 0 < b) (hC : ∀ o : Ordinal, o < b → unbounded_in (C o) b) :
+    ∀ n : ℕ, diag_unbounded_choice C a b n < b := by
   {
-    have hnat : 0 < κ.ord := by exact Cardinal.IsRegular.ord_pos hκ₁
-    have hC₁ : ∀ o : Ordinal, o < κ.ord → unbounded_in (C o) κ.ord := by
-      intro o ho ; exact (hC o ho).1
+    intro n
+    induction n
+    case zero =>
+      unfold diag_unbounded_choice
+      specialize hC 0 h₀
+      exact unbounded_choice_lt hC hab
+    case succ k ih =>
+      unfold diag_unbounded_choice
+      specialize hC (diag_unbounded_choice C a b k) ih
+      apply unbounded_choice_lt hC ih
+  }
+
+lemma diag_unbounded_choice_gt (C : Ordinal → Set Ordinal) (a b : Ordinal)
+  (hab : a < b) (h₀ : 0 < b) (hC : ∀ o : Ordinal, o < b → unbounded_in (C o) b) :
+    ∀ n : ℕ, a < diag_unbounded_choice C a b n := by
+  {
+    intro n
+    induction n
+    case zero =>
+      unfold diag_unbounded_choice
+      specialize hC 0 h₀
+      exact unbounded_choice_gt hC hab
+    case succ k ih =>
+      unfold diag_unbounded_choice
+      obtain hC₂ := hC (diag_unbounded_choice C a b k) (diag_unbounded_choice_lt C a b hab h₀ hC k)
+      obtain h₂ := unbounded_choice_gt hC₂ (diag_unbounded_choice_lt C a b hab h₀ hC k)
+      exact gt_trans h₂ ih
+  }
+
+lemma diag_unbounded_choice_in0 (C : Ordinal → Set Ordinal) (a b : Ordinal)
+  (hab : a < b) (h₀ : 0 < b) (hC : ∀ o : Ordinal, o < b → unbounded_in (C o) b) :
+    diag_unbounded_choice C a b 0 ∈ (C 0) := by
+  exact unbounded_choice_in (hC 0 h₀) hab
+
+lemma diag_unbounded_choice_in (C : Ordinal → Set Ordinal) (a b : Ordinal)
+  (hab : a < b) (h₀ : 0 < b) (hC : ∀ o : Ordinal, o < b → unbounded_in (C o) b) :
+    ∀ n : ℕ, diag_unbounded_choice C a b (n + 1) ∈ (C (diag_unbounded_choice C a b n)) := by
+  intro n
+  induction n
+  case zero =>
+    unfold diag_unbounded_choice ; unfold diag_unbounded_choice
+    refine unbounded_choice_in ?_ (unbounded_choice_lt (hC 0 h₀) hab)
+    apply hC
+    exact unbounded_choice_lt (hC 0 h₀) hab
+  case succ k _ =>
+    unfold diag_unbounded_choice
+    apply unbounded_choice_in
+    apply hC
+    exact diag_unbounded_choice_lt C a b hab h₀ hC (k + 1)
+    exact diag_unbounded_choice_lt C a b hab h₀ hC (k + 1)
+
+lemma diag_unbounded_choice_increasing (C : Ordinal → Set Ordinal) (a b : Ordinal)
+  (hab : a < b) (h₀ : 0 < b) (hC : ∀ o : Ordinal, o < b → unbounded_in (C o) b) :
+    ∀ n : ℕ, diag_unbounded_choice C a b n < diag_unbounded_choice C a b (n + 1) := by
+  intro n
+  induction n
+  case zero =>
+    unfold diag_unbounded_choice ; unfold diag_unbounded_choice
+    apply unbounded_choice_gt
+    · exact hC (unbounded_choice (C 0) b a) (unbounded_choice_lt (hC 0 h₀) hab)
+    · exact unbounded_choice_lt (hC 0 h₀) hab
+  case succ k _ =>
+    unfold diag_unbounded_choice
+    apply unbounded_choice_gt
+    apply hC
+    · exact diag_unbounded_choice_lt C a b hab h₀ hC (k + 1)
+    · apply unbounded_choice_lt
+      · apply hC ; exact diag_unbounded_choice_lt C a b hab h₀ hC k
+      · exact diag_unbounded_choice_lt C a b hab h₀ hC k
+
+theorem diag_int_club_sub_unbounded {o : Ordinal} (hocof : Cardinal.aleph0 < o.cof)
+  (C : Ordinal → Set Ordinal) (hC : ∀ d : Ordinal, d < o → club_in (C d) o)
+  (hCsub : ∀ a d : Ordinal, a < d → C d ⊆ C a) :
+    unbounded_in (diag_int o C) o := by
+  {
+    have hnat : 0 < o := by
+    {
+      by_contra h' ; push_neg at h'
+      have : o.cof = 0 := by
+        exact Ordinal.cof_eq_zero.mpr (Ordinal.le_zero.mp h')
+      rw [this] at hocof
+      simp at hocof
+    }
+    have hC₁ : ∀ d : Ordinal, d < o → unbounded_in (C d) o := by
+      intro d hd ; exact (hC d hd).1
     refine ⟨ (hC 0 hnat).1.1, ?_ ⟩
     intro a ha
-    have : ∃ f : ℕ → Ordinal, a < f 0 ∧ f 0 ∈ (C 0) ∧
-      ∀ n, f (n + 1) ∈ C (f n) ∧ f n < f (n + 1) ∧ f n < κ.ord := by
+    have : ∃ f : ℕ → Ordinal, a < f 0  ∧
+      ∀ n, f (n + 1) ∈ C (f n) ∧ f n < f (n + 1) ∧ f n < o := by
     {
-      sorry
+      use fun n ↦ diag_unbounded_choice C a o n
+      refine ⟨ (diag_unbounded_choice_gt C a o ha hnat hC₁ 0),
+        ?_ ⟩
+      intro n
+      refine ⟨ (diag_unbounded_choice_in C a o ha hnat hC₁ n),
+        (diag_unbounded_choice_increasing C a o ha hnat hC₁ n),
+        (diag_unbounded_choice_lt C a o ha hnat hC₁ n) ⟩
     }
-    obtain ⟨ f, hf₁, hf₂, hf₃ ⟩ := this
+    obtain ⟨ f, hf₁, hf₂ ⟩ := this
     have hfinc : ∀ n m : ℕ, n < m → f n < f m := by --make this a lemma
     {
       intro n m hnm
@@ -706,7 +817,7 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
         exact Nat.not_succ_le_zero n hnm
       case succ k ih =>
         have : f k  < f (k + 1) := by
-          specialize hf₃ k ; exact hf₃.2.1
+          specialize hf₂ k ; exact hf₂.2.1
         by_cases k ≤ n
         · have hnk : n = k := by
             rw [@Nat.lt_succ] at hnm ; exact Nat.le_antisymm hnm h
@@ -724,7 +835,7 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
         exfalso ; exact Nat.not_succ_le_zero n hnm
       case succ k ih =>
         have : f (k + 1) ∈ C (f k) := by
-          specialize hf₃ k ; exact hf₃.1
+          specialize hf₂ k ; exact hf₂.1
         by_cases k ≤ n
         · have hnk : n = k := by
             rw [@Nat.lt_succ] at hnm ; exact Nat.le_antisymm hnm h
@@ -733,16 +844,16 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
           exact hCsub (f n) (f k) (hfinc n k h) this
     }
     set b := Ordinal.sup f ; use b
-    have hfκ : ∀ n, f n < κ.ord := by
-      intro n ; specialize hf₃ n ; exact hf₃.2.2
+    have hfo : ∀ n, f n < o := by
+      intro n ; specialize hf₂ n ; exact hf₂.2.2
     have hfb : ∀ n, f n < b := by /-Make this a lemma-/
     {
-      intro n ; specialize hf₃ n
+      intro n ; specialize hf₂ n
       apply lt_csSup_of_lt (Ordinal.bddAbove_range f)
       · use (n +1)
-      · exact hf₃.2.1
+      · exact hf₂.2.1
     }
-    obtain hbκ := Cardinal.sup_lt_ord_lift_of_isRegular hκ₁ hκ₂ hfκ
+    obtain hbκ := Ordinal.sup_lt_ord_lift hocof hfo
     refine ⟨ hbκ, ?_ ⟩
     constructor
     · refine ⟨ hbκ, ?_ ⟩
@@ -751,8 +862,8 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
       obtain hfCn := hfC n
       have hCb : b ∈ C (f n) := by
       {
-        specialize hC (f n) (hfκ n)
-        obtain ⟨ hC₁, hC₂ ⟩ := hC
+        specialize hC (f n) (hfo n)
+        obtain ⟨ _, hC₂ ⟩ := hC
         specialize hC₂ b hbκ ?_
         · use f (n + 1)
           refine ⟨ hfCn (n + 1) (Nat.lt.base n), ?_ ⟩
@@ -760,7 +871,7 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
         have : sSup (strict_Ordinal_res (C (f n)) b) = b := by
         {
           apply csSup_eq_csSup_of_forall_exists_le
-          · intro x ⟨ hx₁, hx₂ ⟩
+          · intro x ⟨ _, hx₂ ⟩
             obtain ⟨ m, hm ⟩ := Ordinal.lt_sup.mp hx₂ ; use f m
             refine ⟨ ?_, le_of_lt hm ⟩ ; use m
           · intro y ⟨ k, hk ⟩
@@ -784,10 +895,12 @@ theorem diag_int_club_sub_unbounded {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ
 
 theorem diag_int_club_unbounded (κ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
   (C : Ordinal → Set Ordinal) (hC : ∀ o : Ordinal, o < κ.ord → club_in (C o) κ.ord) :
-    unbounded_in (diag_int κ C) κ.ord := by
+    unbounded_in (diag_int κ.ord C) κ.ord := by
   {
     rw [diag_int_of_int]
-    apply diag_int_club_sub_unbounded hκ₁ hκ₂
+    have hκ : Cardinal.aleph0 < κ.ord.cof := by
+      rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
+    apply diag_int_club_sub_unbounded hκ
     intro o ho
     apply int_lt_card_club o hκ₁ hκ₂ (Cardinal.lt_ord.mp ho)
     · intro i hi
@@ -804,34 +917,34 @@ theorem diag_int_club_unbounded (κ : Cardinal) (hκ₁ : κ.IsRegular) (hκ₂ 
 
 theorem diag_int_club {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ)
   (C : Ordinal → Set Ordinal) (hC : ∀ o : Ordinal, o < κ.ord → club_in (C o) κ.ord) :
-  club_in (diag_int κ C) κ.ord := by
+  club_in (diag_int κ.ord C) κ.ord := by
 {
   obtain hu := diag_int_club_unbounded κ hκ₁ hκ₂ C hC
   constructor
   · exact hu
   · intro b hb₁ hb₂
-    set α := sSup (strict_Ordinal_res (diag_int κ C) b)
+    set α := sSup (strict_Ordinal_res (diag_int κ.ord C) b)
     by_contra h'
     have hαb : α ≤ b := by
       apply csSup_le hb₂
       intro c hc ; exact le_of_lt hc.2
     have hακ : α < κ.ord := by
       exact lt_of_le_of_lt hαb hb₁
-    have : sSup (strict_Ordinal_res (diag_int κ C) b) ∉ strict_Ordinal_res (diag_int κ C) b := by
+    have : sSup (strict_Ordinal_res (diag_int κ.ord C) b) ∉ strict_Ordinal_res (diag_int κ.ord C) b := by
       {
         by_contra h''
-        have : α ∈ diag_int κ C := by exact Set.mem_of_mem_inter_left h''
+        have : α ∈ diag_int κ.ord C := by exact Set.mem_of_mem_inter_left h''
         exact h' this
       }
-    have hα : sSup (strict_Ordinal_res (diag_int κ C) α) = α := by
+    have hα : sSup (strict_Ordinal_res (diag_int κ.ord C) α) = α := by
       exact (strict_csSup_res_csSup_res this hb₂).symm
-    have hα₂ : Set.Nonempty (strict_Ordinal_res (diag_int κ C) α) := by
+    have hα₂ : Set.Nonempty (strict_Ordinal_res (diag_int κ.ord C) α) := by
       rw [(strict_res_csSup_res this hb₂).symm]
       exact hb₂
     have : ∃ θ : Ordinal, θ < α ∧ α ∉ C θ := by
     {
       by_contra h'₂ ; push_neg at h'₂
-      have : α ∈ (diag_int κ C) := by constructor ; exact hακ ; exact h'₂
+      have : α ∈ (diag_int κ.ord C) := by constructor ; exact hακ ; exact h'₂
       exact h' this
     }
     obtain ⟨ θ₀, hθ₀₁, hθ₀₂ ⟩ := this
@@ -855,12 +968,12 @@ theorem diag_int_club {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal
         exact hθ₀₂ hαθ₀'
       }
       have hv : ∃ v : Ordinal,
-        v ∈ (diag_int κ C) ∧ θ₀ < v ∧ v < α ∧ sSup (strict_Ordinal_res (C θ₀) α) < v := by
+        v ∈ (diag_int κ.ord C) ∧ θ₀ < v ∧ v < α ∧ sSup (strict_Ordinal_res (C θ₀) α) < v := by
         {
-          have h₄ : Set.Nonempty {x ∈ (strict_Ordinal_res (diag_int κ C) α) |
+          have h₄ : Set.Nonempty {x ∈ (strict_Ordinal_res (diag_int κ.ord C) α) |
             (max (sSup (strict_Ordinal_res (C θ₀) α)) θ₀) < x} := by
           {
-            refine nonempty_lbd_of_sup (strict_Ordinal_res (diag_int κ C) α)
+            refine nonempty_lbd_of_sup (strict_Ordinal_res (diag_int κ.ord C) α)
               (max (sSup (strict_Ordinal_res (C θ₀) α)) θ₀) hα₂ ?_
             apply max_lt
             exact Eq.trans_gt (id hα.symm) hθ₀α
@@ -882,10 +995,10 @@ theorem diag_int_club {κ : Cardinal} (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal
         · exact strict_Ordinal_res_bdd (C θ₀) α
       · specialize hv' θ₀ hv₂
         exact hvθ₀ hv'
-    · have hv : ∃ v : Ordinal, v ∈ (diag_int κ C) ∧ θ₀ < v ∧ v < α := by
+    · have hv : ∃ v : Ordinal, v ∈ (diag_int κ.ord C) ∧ θ₀ < v ∧ v < α := by
         {
-          have h₄ : Set.Nonempty {x ∈ (strict_Ordinal_res (diag_int κ C) α) | θ₀ < x} := by
-            refine nonempty_lbd_of_sup (strict_Ordinal_res (diag_int κ C) α) θ₀ hα₂ ?_
+          have h₄ : Set.Nonempty {x ∈ (strict_Ordinal_res (diag_int κ.ord C) α) | θ₀ < x} := by
+            refine nonempty_lbd_of_sup (strict_Ordinal_res (diag_int κ.ord C) α) θ₀ hα₂ ?_
             exact Eq.trans_gt (id hα.symm) hθ₀₁
           obtain ⟨ x, hx₁, hx₂ ⟩ := h₄
           use x ; constructor
@@ -914,7 +1027,7 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
     by_contra h' ; push_neg at h'
     unfold stationary_in at * ; push_neg at h'
     choose C' hC' using h'
-    let C := diag_int κ C'
+    let C := diag_int κ.ord C'
     have hC : ( sub_Ordinal C κ.ord ) ∧ ( club_in C κ.ord ) := by
       {
         constructor
@@ -964,4 +1077,6 @@ To do:
 • diag_int_club unboundedness proof
 • cleanup part 1 : Nested constructors
 • cleanup part 2 : Naming
+• Maybe include examplpes of stationary sets?
+• Generalize : Instead of regularity, work below cf(κ)
  -/

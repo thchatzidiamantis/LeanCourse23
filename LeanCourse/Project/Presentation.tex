@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{tikz-cd}
+\usetikzlibrary{decorations.pathmorphing, decorations.text}
 \usepackage{graphicx}
 
 \theoremstyle{definition}
@@ -36,13 +37,13 @@
 \begin{frame}{Basic Definitions}
     Let $o$ be a limit ordinal and $C \subseteq o$ a set.
     \begin{defin}
-        \begin{enumerate} \itemsep0.2em
-        \item[i.]  $C$ is called \textbf{unbounded} in $o$ if $\sup (C\cap o)=o$.
+        \begin{itemize} \itemsep0.2em
+        \item $C$ is called \textbf{unbounded} in $o$ if $\sup (C\cap o)=o$.
         \pause
-        \item[ii.] $C$ is called \textbf{closed} in $o$ if for every $\alpha < o$, if $C\cap\alpha\neq\varnothing$, then $\sup (C\cap o)\in C$.
+        \item $C$ is called \textbf{closed} in $o$ if for every $\alpha < o$, if $C\cap\alpha\neq\varnothing$, then $\sup (C\cap o)\in C$.
         \pause
-        \item[iii.] $C$ is called \textbf{club} in $o$ if it is closed and unbounded in $o$.
-        \end{enumerate}
+        \item $C$ is called \textbf{club} in $o$ if it is closed and unbounded in $o$.
+        \end{itemize}
     \end{defin}
     \pause
     \begin{rem}
@@ -60,6 +61,20 @@
 \end{defin}
 \end{frame}
 
+\begin{frame}{Basic Definitions}
+    \begin{defin}
+        Let $\kappa$ be a cardinal.
+        \begin{itemize}
+            \item The \textbf{cofinality} $cof(\kappa)$ of $\kappa$ is the smallest possible cardinality of an unbounded set in $\kappa$ \pause
+            \item A cardinal is \textbf{regular} if $cof(\kappa)=\kappa$
+        \end{itemize} \pause
+        \begin{rem}
+            Cofinality generalizes to ordinals and this is what Lean actually does.
+        \end{rem}
+    \end{defin}
+
+\end{frame}
+
 \begin{frame}{The Theorem}
     Our goal is to prove the following:
     \begin{thm}[Fodor's Lemma]
@@ -75,7 +90,7 @@
 \begin{frame}{Sets and Ordinals are different types. How can they interact?}
     \begin{itemize}
         \item In set theory, everyting is a set, including cardinals and ordinals. This is not true in the type-theoretic framework we are working with. \pause
-        \item With this in mind, our main objects of study here are of type \textbf{Set Ordinal}. \pause
+        \item With this in mind, our main objects of study here are of type \textit{\textbf{Set Ordinal}}. \pause
         \item This makes sense: recall that in ZFC, an ordinal contains every ordinal strictly smaller than itself.
     \end{itemize}
 \end{frame}
@@ -94,8 +109,31 @@
 
 \section{Some Proof Examples}
 
-\begin{frame}{gdsjhfhkdjs}
-
+\begin{frame}{General Structure:}
+    \[\begin{tikzcd}
+        {\text{Basic properties of supremums + Definitions + regularity of} \ \kappa} \\
+        {\text{The intersection of two club sets is club}} \\
+        {\text{The intersection of less than} \ \kappa \ \text{club sets is club}} \\
+        {\text{The diagonal intersection of} \ \kappa \ \text{club sets is club}} \\
+        {\text{Fodor's Lemma}} \\
+        {}
+        \arrow["{\text{induction}}", squiggly, from=2-1, to=3-1]
+        \arrow[squiggly, from=3-1, to=4-1]
+        \arrow[squiggly, from=4-1, to=5-1]
+        \arrow[squiggly, from=1-1, to=2-1]
+    \end{tikzcd}\]
 \end{frame}
+
+\begin{frame}{On Cofinality}
+    \begin{itemize}
+        \item[] Why is it useful to work with sequences of length $\omega$? \pause
+        \item[] If $\kappa$ is uncountable and regular, the limit of such an ascending sequence will always be less than $\kappa$ by regularity of $\kappa$, since $\mathbb{N}$ is countable.
+    \end{itemize} \pause
+    \par With this in mind, a very easy generalisation for the properties of club sets is apparent:
+    \begin{rem}
+        We can replace our uncountable regular cardinal with any ordinal $o$ satisfying $cof(o)>\aleph_0$.
+    \end{rem}
+\end{frame}
+
 
 \end{document}
