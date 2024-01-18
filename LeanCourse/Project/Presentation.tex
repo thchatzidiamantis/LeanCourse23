@@ -1,5 +1,5 @@
 \documentclass{beamer}
-\usetheme{Szeged}
+\usetheme{Dresden}
 \usepackage{ucs}
 \usepackage[utf8x]{inputenc}
 \usepackage{kerkis}
@@ -87,7 +87,7 @@
 %Say why we are taking function to the type Ordinal and restricting afterwards, set theory vs type theory
 %Constructivists avert your eyes
 
-\begin{frame}{Sets and Ordinals are different types. How can they interact?}
+\begin{frame}{Sets and Ordinals are different types.}
     \begin{itemize}
         \item In set theory, everyting is a set, including cardinals and ordinals. This is not true in the type-theoretic framework we are working with. \pause
         \item With this in mind, our main objects of study here are of type \textit{\textbf{Set Ordinal}}. \pause
@@ -95,19 +95,25 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Sets and Ordinals are different types. How can they interact?}
-    fdsafdsaf
+\begin{frame}{Sets and Ordinals are different types.}
+    In Lean, for C : \textit{Set Ordinal} and o : \textit{Ordinal}, we define:
+    \begin{itemize}
+        \item \text{strict\_Ordinal\_res C o} := $\{c\in C | c < o\}$, corresponding to $C\cap o.$ \pause
+        \item \text{Ordinal\_res C o} := $\{c\in C | c \leq o\}$ \pause
+    \end{itemize}
+    "strict" is the correct notion, but Ordinal\_res has nicer properties and we use it whenever they are equal (i.e., when $o\notin C$)
 \end{frame}
 
-\begin{frame}{Sets and Ordinals are different types. How can they interact?}
-    fdasfdaf
-\end{frame}
+\section{Comments on the Proof}
 
-\begin{frame}{Working with supremums is hard.}
-    fdsafda
+\begin{frame}
+    We need one last definition : \pause
+    \begin{defin}
+        Let $\kappa$ be a cardinal and let $(C_\alpha)_{\alpha <\kappa}$ be a sequence of subsets of
+    $\kappa$. The \textbf{diagonal intersection} of $(C_\alpha)_{\alpha <\kappa}$ is defined to be
+    $$\Delta_{\alpha<\kappa}C_\alpha:=\{\beta <\kappa\ |\ \beta \in C_{\theta}\ \forall\theta<\beta\}$$
+    \end{defin}
 \end{frame}
-
-\section{Some Proof Examples}
 
 \begin{frame}{General Structure:}
     \[\begin{tikzcd}
@@ -124,6 +130,18 @@
     \end{tikzcd}\]
 \end{frame}
 
+\begin{frame}{Proving Closedness:}
+    \pause This came down to manipulating supremums.
+\end{frame}
+
+\begin{frame}{Proving Unboundedness:}
+    \begin{itemize}
+        \item[] For each of the main theorems about club sets, we construct a "good" increasing sequence $\mathbb{N}\to Ordinal$ recursively. \pause
+        \item[] We then use our closedness assumptions to prove that its limit is in our intersection.
+        \item[] These arguments use both closedness and unboundedness assumptions.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{On Cofinality}
     \begin{itemize}
         \item[] Why is it useful to work with sequences of length $\omega$? \pause
@@ -134,6 +152,5 @@
         We can replace our uncountable regular cardinal with any ordinal $o$ satisfying $cof(o)>\aleph_0$.
     \end{rem}
 \end{frame}
-
 
 \end{document}
