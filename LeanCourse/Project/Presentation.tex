@@ -24,7 +24,8 @@
 \newtheorem{rem}[subsection]{Remark}
 \newtheorem{ex}[subsection]{Example}
 
-\title{Formalization of the Proof of Fodor's Lemma}
+\title{Fodor's Lemma in Lean}
+\subtitle{Or, I formalized some nice facts about club sets}
 \author{Theofanis Chatzidiamantis Christoforidis}
 \date{January 2024}
 
@@ -40,14 +41,14 @@
         \begin{itemize} \itemsep0.2em
         \item $C$ is called \textbf{unbounded} in $o$ if $\sup (C\cap o)=o$.
         \pause
-        \item $C$ is called \textbf{closed} in $o$ if for every $\alpha < o$, if $C\cap\alpha\neq\varnothing$, then $\sup (C\cap o)\in C$.
+        \item $C$ is called \textbf{closed} in $o$ if for every $\alpha < o$, if $C\cap\alpha\neq\varnothing$, then $\sup (C\cap \alpha)\in C$.
         \pause
         \item $C$ is called \textbf{club} in $o$ if it is closed and unbounded in $o$.
         \end{itemize}
     \end{defin}
     \pause
     \begin{rem}
-        Equivalently, $C$ is unbounded in $o$ if for every $\alpha < o$, there is a $\beta\in C$ such that $\alpha<\beta$.
+        Equivalently, $C$ is unbounded in $o$ if for every $\alpha < o$, there is a $\beta\in C$ such that $\alpha<\beta$ and $\beta < o$.
     \end{rem}
 \end{frame}
 
@@ -79,7 +80,8 @@
     Our goal is to prove the following:
     \begin{thm}[Fodor's Lemma]
        Let $\kappa$ be an uncountable regular cardinal, $S\subseteq\kappa$ a stationary set and let $f:S\rightarrow \kappa$ be a regressive function. Then there is an ordinal $\theta <\kappa$ such that $f^{-1}(\{\theta\})$ is stationary in $\kappa$.
-    \end{thm}
+    \end{thm}\pause
+    In other words, a regressive function on a stationary set is constant on some stationary subset of its domain.
 \end{frame}
 
 \section{Translating to Lean}
@@ -107,12 +109,22 @@
 \section{Comments on the Proof}
 
 \begin{frame}
-    We need one last definition : \pause
+    To prove Fodor's Lemma we need one last definition : \pause
     \begin{defin}
         Let $\kappa$ be a cardinal and let $(C_\alpha)_{\alpha <\kappa}$ be a sequence of subsets of
     $\kappa$. The \textbf{diagonal intersection} of $(C_\alpha)_{\alpha <\kappa}$ is defined to be
     $$\Delta_{\alpha<\kappa}C_\alpha:=\{\beta <\kappa\ |\ \beta \in C_{\theta}\ \forall\theta<\beta\}$$
     \end{defin}
+\end{frame}
+
+\begin{frame}{How to prove Fodor's Lemma}
+    \begin{itemize}
+        \item First we prove that $(C_\alpha)_{\alpha <\kappa}$ a sequence of club sets, $\Delta_{\alpha<\kappa}C_\alpha$ is club \pause (This is about 95$\%$ of the lines of code). \pause
+        \item Assume that no $f^{-1}(\theta)$ is stationary. \pause
+        \item Then for each $o < \kappa$, choose a club set that does not intersect its preimage.
+        \item Take the diagonal intersection of the sequence you just created. this is club and thus intersects $S$. \pause
+        \item Use the definition of $\Delta$ to prove that $f$ is not regressive, contradiction.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{General Structure:}
@@ -131,7 +143,10 @@
 \end{frame}
 
 \begin{frame}{Proving Closedness:}
-    \pause This came down to manipulating supremums.
+    \begin{itemize}
+        \item[] This came down to manipulating supremums. \pause
+        \item[] All their basic properties are in mathlib, but I formalized some of my own for the previously defined restrictions.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Proving Unboundedness:}

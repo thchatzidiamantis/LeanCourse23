@@ -9,30 +9,32 @@
 \headcommand {\beamer@framepages {6}{7}}
 \headcommand {\slideentry {1}{18}{0}{8/10}{}{0}}
 \headcommand {\beamer@framepages {8}{10}}
-\headcommand {\slideentry {1}{19}{0}{11/11}{}{0}}
-\headcommand {\beamer@framepages {11}{11}}
-\headcommand {\beamer@sectionpages {2}{11}}
-\headcommand {\beamer@subsectionpages {2}{11}}
-\headcommand {\sectionentry {2}{Translating to Lean}{12}{Translating to Lean}{0}}
-\headcommand {\slideentry {2}{0}{1}{12/14}{}{0}}
-\headcommand {\beamer@framepages {12}{14}}
-\headcommand {\slideentry {2}{0}{2}{15/17}{}{0}}
-\headcommand {\beamer@framepages {15}{17}}
-\headcommand {\beamer@sectionpages {12}{17}}
-\headcommand {\beamer@subsectionpages {12}{17}}
-\headcommand {\sectionentry {3}{Comments on the Proof}{18}{Comments on the Proof}{0}}
-\headcommand {\slideentry {3}{2}{0}{18/19}{}{0}}
-\headcommand {\beamer@framepages {18}{19}}
-\headcommand {\slideentry {3}{2}{1}{20/20}{}{0}}
-\headcommand {\beamer@framepages {20}{20}}
-\headcommand {\slideentry {3}{2}{2}{21/22}{}{0}}
-\headcommand {\beamer@framepages {21}{22}}
-\headcommand {\slideentry {3}{2}{3}{23/24}{}{0}}
-\headcommand {\beamer@framepages {23}{24}}
-\headcommand {\slideentry {3}{5}{0}{25/27}{}{0}}
-\headcommand {\beamer@framepages {25}{27}}
-\headcommand {\beamer@partpages {1}{27}}
-\headcommand {\beamer@subsectionpages {18}{27}}
-\headcommand {\beamer@sectionpages {18}{27}}
-\headcommand {\beamer@documentpages {27}}
-\headcommand {\gdef \inserttotalframenumber {12}}
+\headcommand {\slideentry {1}{20}{0}{11/12}{}{0}}
+\headcommand {\beamer@framepages {11}{12}}
+\headcommand {\beamer@sectionpages {2}{12}}
+\headcommand {\beamer@subsectionpages {2}{12}}
+\headcommand {\sectionentry {2}{Translating to Lean}{13}{Translating to Lean}{0}}
+\headcommand {\slideentry {2}{0}{1}{13/15}{}{0}}
+\headcommand {\beamer@framepages {13}{15}}
+\headcommand {\slideentry {2}{0}{2}{16/18}{}{0}}
+\headcommand {\beamer@framepages {16}{18}}
+\headcommand {\beamer@sectionpages {13}{18}}
+\headcommand {\beamer@subsectionpages {13}{18}}
+\headcommand {\sectionentry {3}{Comments on the Proof}{19}{Comments on the Proof}{0}}
+\headcommand {\slideentry {3}{2}{0}{19/20}{}{0}}
+\headcommand {\beamer@framepages {19}{20}}
+\headcommand {\slideentry {3}{2}{1}{21/25}{}{0}}
+\headcommand {\beamer@framepages {21}{25}}
+\headcommand {\slideentry {3}{2}{2}{26/26}{}{0}}
+\headcommand {\beamer@framepages {26}{26}}
+\headcommand {\slideentry {3}{2}{3}{27/28}{}{0}}
+\headcommand {\beamer@framepages {27}{28}}
+\headcommand {\slideentry {3}{2}{4}{29/30}{}{0}}
+\headcommand {\beamer@framepages {29}{30}}
+\headcommand {\slideentry {3}{5}{0}{31/33}{}{0}}
+\headcommand {\beamer@framepages {31}{33}}
+\headcommand {\beamer@partpages {1}{33}}
+\headcommand {\beamer@subsectionpages {19}{33}}
+\headcommand {\beamer@sectionpages {19}{33}}
+\headcommand {\beamer@documentpages {33}}
+\headcommand {\gdef \inserttotalframenumber {13}}
