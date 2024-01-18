@@ -93,15 +93,15 @@
     \begin{itemize}
         \item In set theory, everyting is a set, including cardinals and ordinals. This is not true in the type-theoretic framework we are working with. \pause
         \item With this in mind, our main objects of study here are of type \textit{\textbf{Set Ordinal}}. \pause
-        \item This makes sense: recall that in ZFC, an ordinal contains every ordinal strictly smaller than itself.
+        \item This makes sense: An ordinal contains every ordinal striclty smaller than itself.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Sets and Ordinals are different types.}
     In Lean, for C : \textit{Set Ordinal} and o : \textit{Ordinal}, we define:
     \begin{itemize}
-        \item \text{strict\_Ordinal\_res C o} := $\{c\in C | c < o\}$, corresponding to $C\cap o.$ \pause
-        \item \text{Ordinal\_res C o} := $\{c\in C | c \leq o\}$ \pause
+        \item \texttt{\text{strict\_Ordinal\_res C o} :=} $\mathtt{\{c\in C | c < o\}}$, corresponding to $C\cap o.$ \pause
+        \item \texttt{Ordinal\_res C o} := $\mathtt{\{c\in C | c \leq o\}}$ \pause
     \end{itemize}
     "strict" is the correct notion, but Ordinal\_res has nicer properties and we use it whenever they are equal (i.e., when $o\notin C$)
 \end{frame}
