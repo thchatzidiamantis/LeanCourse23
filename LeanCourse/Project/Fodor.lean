@@ -325,12 +325,16 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
             suffices hcs : c ≤ s by
               by_contra hcs' ; push_neg at hcs'
               rw [propext (LE.le.ge_iff_eq hcs')] at hcs
-
-            sorry
+              specialize hc₁ j hj
+              rw [← hcs] at hc₁
+              exact h' hc₁
+            apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+            constructor
+            · simp ; exact hc₁
+            · exact hc₂
         exact h' h''
     · rw [← @Cardinal.lt_ord] at hlκ
       exact hC d hlκ
-
 }
 
 theorem diag_int_club_sub_unbounded {o : Ordinal} (hocof : Cardinal.aleph0 < o.cof)
@@ -626,6 +630,6 @@ To do:
 
 • Write a lemma that does the conversion from the general case to the regular cardinal case
 • lemma : If sSup is not in the set, then there is a strictly smaller element in the set
-• Get induction to work for int_lt_card_club
+• Clean up closedness proof for int_lt_card_club
 • Maybe include examplpes of stationary sets?
  -/
