@@ -510,3 +510,15 @@ lemma diag_unbounded_choice_increasing (C : Ordinal → Set Ordinal) (a b : Ordi
     · apply unbounded_choice_lt
       · apply hC ; exact diag_unbounded_choice_lt C a b hab h₀ hC k
       · exact diag_unbounded_choice_lt C a b hab h₀ hC k
+
+noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iic c) → Ordinal := by
+{
+  induction c using Ordinal.limitRecOn
+  case H₁ =>
+    intro x
+    use unbounded_choice (C 0) b a
+  case H₂ =>
+    sorry
+  case H₃ =>
+    sorry
+}

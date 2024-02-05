@@ -294,13 +294,40 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
       · sorry
       · rw [← @Cardinal.lt_ord] at hlκ
         intro b hb₁ hb₂
-        set s:= sSup (strict_Ordinal_res (⋂ i, ⋂ (_ : i < d), C i) b)
-        simp ; intro i hi
-        have hs : sSup (strict_Ordinal_res (⋂ i, ⋂ (_ : i < d), C i) b) = sSup (strict_Ordinal_res (C i) d) := by sorry
-        rw [hs]
-        apply (hC i (lt_trans hi hlκ)).2
-        sorry
-        sorry
+        intro D ⟨ ⟨ j, hj ⟩ , hD ⟩ ; simp at hD ; rw [← hD]
+        obtain ⟨ ⟨ _, hCj₁ ⟩ , hCj₂ ⟩ := hC j (gt_trans hlκ hj)
+        set s := sSup (strict_Ordinal_res (⋂ i : (Set.Iio d), C i) b)
+        by_contra h'
+        have h'' : s ∈ C j := by
+          have hs : s = sSup (strict_Ordinal_res (C j) s) := by
+          {
+            apply csSup_eq_csSup_of_forall_exists_le
+            · intro x ⟨ hx₁, hx₂ ⟩
+              simp at hx₁
+              obtain hxj := hx₁ j hj
+              obtain hCjs := res_eq_strict_res_iff.1 h'
+              rw [← hCjs]
+              use x ; refine ⟨ ⟨ hxj, ?_ ⟩ , Eq.le rfl ⟩
+              apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+              refine ⟨ ?_, hx₂ ⟩
+              simp ; exact hx₁
+            · intro y ⟨ hy₁, hy₂ ⟩
+              obtain ⟨ z, hz₁, hz₂ ⟩ := exists_lt_of_lt_csSup' hy₂
+              use z ; exact ⟨ hz₁, le_of_lt hz₂ ⟩
+          }
+          rw [hs]
+          refine hCj₂ ?_ ?_ ?_
+          · obtain hsb := csSup_le' (strict_Ordinal_res_bdd' (⋂ i : (Set.Iio d), C i) b)
+            exact lt_of_le_of_lt hsb hb₁
+          · obtain ⟨ c, ⟨ hc₁, hc₂ ⟩ ⟩ := hb₂
+            simp at hc₁
+            use c ; refine ⟨ hc₁ j hj, ?_ ⟩
+            suffices hcs : c ≤ s by
+              by_contra hcs' ; push_neg at hcs'
+              rw [propext (LE.le.ge_iff_eq hcs')] at hcs
+
+            sorry
+        exact h' h''
     · rw [← @Cardinal.lt_ord] at hlκ
       exact hC d hlκ
 
