@@ -316,7 +316,7 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
               use z ; exact ⟨ hz₁, le_of_lt hz₂ ⟩
           }
           rw [hs]
-          refine hCj₂ ?_ ?_ ?_
+          apply hCj₂
           · obtain hsb := csSup_le' (strict_Ordinal_res_bdd' (⋂ i : (Set.Iio d), C i) b)
             exact lt_of_le_of_lt hsb hb₁
           · obtain ⟨ c, ⟨ hc₁, hc₂ ⟩ ⟩ := hb₂

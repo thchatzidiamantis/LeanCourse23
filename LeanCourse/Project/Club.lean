@@ -349,7 +349,6 @@ def Ord_fun_regressive (C : Set Ordinal) (f : Ordinal → Ordinal) : Prop :=
 noncomputable instance Decidable_unbounded {C : Set Ordinal} {o : Ordinal} : Decidable (unbounded_in C o) := by
   exact Classical.dec (unbounded_in C o)
 
-
 noncomputable def unbounded_choice (C : Set Ordinal) (o : Ordinal) (a : Ordinal) : Ordinal :=
     if hC: (unbounded_in C o) then
       if ha : a < o then Exists.choose (hC.2 a ha)
@@ -513,12 +512,31 @@ lemma diag_unbounded_choice_increasing (C : Ordinal → Set Ordinal) (a b : Ordi
 
 noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iic c) → Ordinal := by
 {
-  induction c using Ordinal.limitRecOn
-  case H₁ =>
-    intro x
-    use unbounded_choice (C 0) b a
-  case H₂ =>
-    sorry
-  case H₃ =>
-    sorry
+  intro ⟨ x, hx ⟩
+  induction x using Ordinal.limitRecOn
+  case H₁
+  -- induction c using Ordinal.limitRecOn
+  -- case H₁ =>
+  --   intro x
+  --   use unbounded_choice (C 0) b a
+  -- case H₂ d f =>
+  --   intro ⟨ x, hx ⟩
+  --   simp at hx
+  --   rw [@Order.le_succ_iff_eq_or_le] at hx
+  --   by_cases hx₁ : x ≤ d --Why can't I separate hx into two cases immediately?
+  --   · use f ⟨ x, hx₁ ⟩
+  --   · rw [propext (or_iff_left hx₁)] at hx
+  --     if hC : unbounded_in (⋂ i : (Set.Iic d), C i) b then
+  --       use unbounded_choice (⋂ i : (Set.Iic d), C i) b (int_unbounded_choice C a b d ⟨ d, Set.right_mem_Iic ⟩)
+  --     else use 0
+  -- case H₃ d hd f =>
+  --   intro ⟨ x, hx ⟩
+  --   simp at hx
+  --   rw [@le_iff_lt_or_eq] at hx
+  --   by_cases hx₁ : x < d
+  --   · use f x hx₁ ⟨ x, Set.right_mem_Iic ⟩
+  --   · rw [propext (or_iff_right hx₁)] at hx ; clear hx₁
+  --     if hC : unbounded_in (⋂ i : (Set.Iio d), C i) b then
+  --       use unbounded_choice (⋂ i : (Set.Iio d), C i) b (int_unbounded_choice C a b d ⟨ d, Set.right_mem_Iic ⟩)
+  --     else use 0
 }
