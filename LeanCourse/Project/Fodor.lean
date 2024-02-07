@@ -291,7 +291,17 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
     rw [this] ; apply int_two_club
     · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
     · constructor
-      · sorry
+      · refine ⟨ (hC 0 (Cardinal.IsRegular.ord_pos hκ₁)).1.1, ?_ ⟩
+        intro a ha
+        set f : Set.Iio d → Ordinal := fun x ↦ int_unbounded_choice C a κ.ord d x
+        have hfκ : ∀ x : Set.Iio d, f x < κ.ord := by sorry
+        --use Ordinal.sup f
+        use sSup (Set.range f)
+        refine ⟨ ?_, ?_, ?_ ⟩
+        · -- apply Ordinal.sup_lt_ord
+          sorry
+        · sorry
+        · sorry
       · rw [← @Cardinal.lt_ord] at hlκ
         intro b hb₁ hb₂
         intro D ⟨ ⟨ j, hj ⟩ , hD ⟩ ; simp at hD ; rw [← hD]
@@ -624,12 +634,3 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
   }
 
 #lint
-
-/-
-To do:
-
-• Write a lemma that does the conversion from the general case to the regular cardinal case
-• lemma : If sSup is not in the set, then there is a strictly smaller element in the set
-• Clean up closedness proof for int_lt_card_club
-• Maybe include examplpes of stationary sets?
- -/

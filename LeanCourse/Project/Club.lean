@@ -510,33 +510,69 @@ lemma diag_unbounded_choice_increasing (C : Ordinal → Set Ordinal) (a b : Ordi
       · apply hC ; exact diag_unbounded_choice_lt C a b hab h₀ hC k
       · exact diag_unbounded_choice_lt C a b hab h₀ hC k
 
-noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iic c) → Ordinal := by
+lemma le_in_Iic {o a: Ordinal} (h : Order.succ a ∈ Set.Iic o) : a ∈ Set.Iic o := by
+  rw [Set.mem_Iic, Order.succ_le_iff] at *
+  exact LT.lt.le h
+
+lemma le_in_Iio {o a: Ordinal} (h : Order.succ a ∈ Set.Iio o) : a ∈ Set.Iio o := by
+  simp at *
+  have : a < Order.succ a := by
+    exact Order.lt_succ a
+  exact gt_trans h this
+
+/-Maybe the Iic version is better
+noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iio c) → Ordinal := by
 {
   intro ⟨ x, hx ⟩
   induction x using Ordinal.limitRecOn
-  case H₁
-  -- induction c using Ordinal.limitRecOn
-  -- case H₁ =>
-  --   intro x
-  --   use unbounded_choice (C 0) b a
-  -- case H₂ d f =>
-  --   intro ⟨ x, hx ⟩
-  --   simp at hx
-  --   rw [@Order.le_succ_iff_eq_or_le] at hx
-  --   by_cases hx₁ : x ≤ d --Why can't I separate hx into two cases immediately?
-  --   · use f ⟨ x, hx₁ ⟩
-  --   · rw [propext (or_iff_left hx₁)] at hx
-  --     if hC : unbounded_in (⋂ i : (Set.Iic d), C i) b then
-  --       use unbounded_choice (⋂ i : (Set.Iic d), C i) b (int_unbounded_choice C a b d ⟨ d, Set.right_mem_Iic ⟩)
-  --     else use 0
-  -- case H₃ d hd f =>
-  --   intro ⟨ x, hx ⟩
-  --   simp at hx
-  --   rw [@le_iff_lt_or_eq] at hx
-  --   by_cases hx₁ : x < d
-  --   · use f x hx₁ ⟨ x, Set.right_mem_Iic ⟩
-  --   · rw [propext (or_iff_right hx₁)] at hx ; clear hx₁
-  --     if hC : unbounded_in (⋂ i : (Set.Iio d), C i) b then
-  --       use unbounded_choice (⋂ i : (Set.Iio d), C i) b (int_unbounded_choice C a b d ⟨ d, Set.right_mem_Iic ⟩)
-  --     else use 0
+  case H₁ =>
+    use unbounded_choice (C 0) b a
+  case H₂ d f =>
+    use unbounded_choice (⋂ i : (Set.Iic d), C i) b (f (le_in_Iic hx))
+  case H₃ d _ f =>
+    set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, ∃ hzc : z ∈ Set.Iic c, f z hzd hzc = v}
+    use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
+}-/
+noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iio c) → Ordinal := by
+{
+  intro ⟨ x, hx ⟩
+  induction x using Ordinal.limitRecOn
+  case H₁ =>
+    use unbounded_choice (C 0) b a
+  case H₂ d f =>
+    use unbounded_choice (⋂ i : (Set.Iio d), C i) b (f (le_in_Iio hx))
+  case H₃ d _ f =>
+    set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, ∃ hzc : z ∈ Set.Iio c, f z hzd hzc = v}
+    use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
 }
+
+noncomputable def int_unbounded_choice' (C : Ordinal → Set Ordinal) (a b c: Ordinal) :
+  (o : Ordinal) → (o < c) → Ordinal := by
+{
+  intro x hx
+  induction x using Ordinal.limitRecOn
+  case H₁ =>
+    use unbounded_choice (C 0) b a
+  case H₂ d f =>
+    use unbounded_choice (⋂ i : (Set.Iio d), C i) b (f (le_in_Iio hx))
+  case H₃ d _ f =>
+    set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, ∃ hzc : z < c, f z hzd hzc = v}
+    use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
+}
+-- lemma int_unbounded_choice_lt {C : Ordinal → Set Ordinal} {a c : Ordinal} {κ : Cardinal}
+--   (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ) (haκ : a < κ.ord) (hlκ : c.card < κ)
+--   (hC : ∀ i : Ordinal, i < κ.ord → unbounded_in (C i) κ.ord) :
+--     ∀ v : Set.Iic c, (int_unbounded_choice C a κ.ord c v) < κ.ord := by
+--   {
+--     unfold int_unbounded_choice
+--     intro ⟨ x, hx ⟩
+--     induction x using Ordinal.limitRecOn
+--     case H₁ =>
+--       obtain h0 := hC 0 (Cardinal.IsRegular.ord_pos hκ₁)
+--       simp [h0]
+--       exact unbounded_choice_lt h0 haκ
+--     case H₂ d hd =>
+--       have hCd : unbounded_in (C d) κ.ord := by sorry
+--       sorry
+--     sorry
+--   }
