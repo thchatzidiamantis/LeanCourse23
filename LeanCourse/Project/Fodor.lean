@@ -223,6 +223,102 @@ theorem int_two_club (C D : Set Ordinal) (o : Ordinal)
       exact h' this
   }
 
+theorem int_lt_card_sub_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
+  (hκ₂ : Cardinal.aleph0 < κ) (hlκ : l.card < κ) (C : Ordinal → Set Ordinal)
+  (hC : ∀ i : Ordinal, i < l → club_in (C i) κ.ord)
+  (hCsub : ∀ a d : Ordinal, a < d → C d ⊆ C a) (nontriv : 0 < l):
+    club_in (⋂ i : Set.Iio l, (C i)) κ.ord := by
+  {
+    induction l, nontriv using Ordinal.limitRecOn
+    case H₁ =>
+      exfalso
+      exact LT.lt.false nontriv
+    case H₂ d hd =>
+      have : (⋂ i : Set.Iio (Order.succ d), (C i)) = --Make this a lemma
+        (⋂ i : Set.Iio d, (C i)) ∩ (C d) :=by
+        {
+          ext x ; constructor
+          · intro hx ; simp [Set.iInter_coe_set] at *
+            constructor
+            · intro i hi
+              refine hx i ?_
+              exact LT.lt.le hi
+            · refine hx d (le_of_eq ?_) ; rfl
+          · intro hx ; simp [Set.iInter_coe_set] at * ; obtain ⟨ hx₁, hx₂ ⟩ := hx
+            intro i hi
+            rw [@le_iff_lt_or_eq] at hi
+            obtain hi₁|hi₂ := hi
+            exact hx₁ i hi₁
+            rw [hi₂] ; exact hx₂
+        }
+      by_cases 0 <d
+      rw [this]
+      apply int_two_club
+      · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
+      · apply hd
+        · rw [← @Cardinal.lt_ord] at *
+          obtain hyp := Order.lt_succ d
+          exact gt_trans hlκ hyp
+        · intro i hi
+          have hisd : i < Order.succ d := by rw [@Order.lt_succ_iff] ; exact LT.lt.le hi
+          exact hC i hisd
+        · exact h
+      · exact hC d (Order.lt_succ d)
+      rw [@not_lt] at h ; rw [@Ordinal.le_zero] at h
+      have : ⋂ i : Set.Iio (Order.succ d), (C i) = C 0 := by
+        ext x ; constructor
+        · intro hx ; simp at hx ; rw [h] at hx
+          apply hx ; rfl
+        · intro hx ; simp ; intro i hi ; rw [h] at hi
+          have : i = 0 := by exact Ordinal.le_zero.mp hi
+          rw [this] ; exact hx
+      rw [this] ; exact hC 0 nontriv
+    case H₃ d hd₁ hd₂ =>
+      constructor
+      · sorry
+      · rw [← @Cardinal.lt_ord] at hlκ
+        intro b hb₁ hb₂
+        intro D ⟨ ⟨ j, hj ⟩ , hD ⟩ ; simp at hD ; rw [← hD] ; simp at hj
+        obtain ⟨ ⟨ _, hCj₁ ⟩ , hCj₂ ⟩ := hC j hj
+        set s := sSup (strict_Ordinal_res (⋂ i : (Set.Iio d), C i) b)
+        by_contra h'
+        have h'' : s ∈ C j := by
+          have hs : s = sSup (strict_Ordinal_res (C j) s) := by
+          {
+            apply csSup_eq_csSup_of_forall_exists_le
+            · intro x ⟨ hx₁, hx₂ ⟩
+              simp at hx₁
+              obtain hxj := hx₁ j hj
+              obtain hCjs := res_eq_strict_res_iff.1 h'
+              rw [← hCjs]
+              use x ; refine ⟨ ⟨ hxj, ?_ ⟩ , Eq.le rfl ⟩
+              apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+              refine ⟨ ?_, hx₂ ⟩
+              simp ; exact hx₁
+            · intro y ⟨ hy₁, hy₂ ⟩
+              obtain ⟨ z, hz₁, hz₂ ⟩ := exists_lt_of_lt_csSup' hy₂
+              use z ; exact ⟨ hz₁, le_of_lt hz₂ ⟩
+          }
+          rw [hs]
+          apply hCj₂
+          · obtain hsb := csSup_le' (strict_Ordinal_res_bdd' (⋂ i : (Set.Iio d), C i) b)
+            exact lt_of_le_of_lt hsb hb₁
+          · obtain ⟨ c, ⟨ hc₁, hc₂ ⟩ ⟩ := hb₂
+            simp at hc₁
+            use c ; refine ⟨ hc₁ j hj, ?_ ⟩
+            suffices hcs : c ≤ s by
+              by_contra hcs' ; push_neg at hcs'
+              rw [propext (LE.le.ge_iff_eq hcs')] at hcs
+              specialize hc₁ j hj
+              rw [← hcs] at hc₁
+              exact h' hc₁
+            apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+            constructor
+            · simp ; exact hc₁
+            · exact hc₂
+        exact h' h''
+  }
+
 theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
   (hκ₂ : Cardinal.aleph0 < κ) (hlκ : l.card < κ) (C : Ordinal → Set Ordinal)
   (hC : ∀ i : Ordinal, i < κ.ord → club_in (C i) κ.ord) :
@@ -270,82 +366,244 @@ theorem int_lt_card_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
     rw [← @Cardinal.lt_ord] at hlκ
     refine  hC (Order.succ d) hlκ
   case H₃ d hd₁ hd₂ =>
-    have : (⋂ i : Set.Iic d, (C i)) = --Make this a lemma (can be made the same as the one in H₂)
-      (⋂ i : Set.Iio d, (C i)) ∩ (C d) :=by
-      {
-        ext x ; constructor
-        · intro hx ; simp [Set.iInter_coe_set] at *
-          constructor
-          · intro i hi
-            refine hx i ?_
-            apply le_of_lt ; exact hi
-          · refine hx d ?_
-            exact Eq.le rfl
-        · intro hx ; simp [Set.iInter_coe_set] at * ; obtain ⟨ hx₁, hx₂ ⟩ := hx
-          intro i hi
-          rw [@le_iff_lt_or_eq] at hi
-          obtain hi₁|hi₂ := hi
-          · exact hx₁ i hi₁
-          · rw [hi₂] ; exact hx₂
-      }
-    rw [this] ; apply int_two_club
+    set int : Ordinal → Set Ordinal := fun o ↦ ⋂ j : (Set.Iic o), (C j)
+    have hint : ⋂ i : (Set.Iio d), (C i) = ⋂ i : (Set.Iio d), (int i) := by --Make this a lemma
+    {
+      ext x ; constructor
+      · intro hx ; simp at hx
+        intro D ⟨ ⟨ j, hj ⟩, hDj ⟩ ; simp at hDj
+        rw [← hDj]
+        rw [@Set.mem_iInter₂]
+        intro i hi
+        apply hx
+        exact lt_of_le_of_lt hi hj
+      · intro hx ; simp at *
+        intro i hi
+        apply hx i hi i ; exact Eq.le rfl
+    }
+    have := int_Iic C d
+    rw [this] ; apply int_two_club ; clear this
     · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
-    · constructor
-      · refine ⟨ (hC 0 (Cardinal.IsRegular.ord_pos hκ₁)).1.1, ?_ ⟩
-        intro a ha
-        set f : Set.Iio d → Ordinal := fun x ↦ int_unbounded_choice C a κ.ord d x
-        have hfκ : ∀ x : Set.Iio d, f x < κ.ord := by sorry
-        --use Ordinal.sup f
-        use sSup (Set.range f)
-        refine ⟨ ?_, ?_, ?_ ⟩
-        · -- apply Ordinal.sup_lt_ord
-          sorry
-        · sorry
-        · sorry
-      · rw [← @Cardinal.lt_ord] at hlκ
-        intro b hb₁ hb₂
-        intro D ⟨ ⟨ j, hj ⟩ , hD ⟩ ; simp at hD ; rw [← hD]
-        obtain ⟨ ⟨ _, hCj₁ ⟩ , hCj₂ ⟩ := hC j (gt_trans hlκ hj)
-        set s := sSup (strict_Ordinal_res (⋂ i : (Set.Iio d), C i) b)
-        by_contra h'
-        have h'' : s ∈ C j := by
-          have hs : s = sSup (strict_Ordinal_res (C j) s) := by
-          {
-            apply csSup_eq_csSup_of_forall_exists_le
-            · intro x ⟨ hx₁, hx₂ ⟩
-              simp at hx₁
-              obtain hxj := hx₁ j hj
-              obtain hCjs := res_eq_strict_res_iff.1 h'
-              rw [← hCjs]
-              use x ; refine ⟨ ⟨ hxj, ?_ ⟩ , Eq.le rfl ⟩
-              apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
-              refine ⟨ ?_, hx₂ ⟩
-              simp ; exact hx₁
-            · intro y ⟨ hy₁, hy₂ ⟩
-              obtain ⟨ z, hz₁, hz₂ ⟩ := exists_lt_of_lt_csSup' hy₂
-              use z ; exact ⟨ hz₁, le_of_lt hz₂ ⟩
-          }
-          rw [hs]
-          apply hCj₂
-          · obtain hsb := csSup_le' (strict_Ordinal_res_bdd' (⋂ i : (Set.Iio d), C i) b)
-            exact lt_of_le_of_lt hsb hb₁
-          · obtain ⟨ c, ⟨ hc₁, hc₂ ⟩ ⟩ := hb₂
-            simp at hc₁
-            use c ; refine ⟨ hc₁ j hj, ?_ ⟩
-            suffices hcs : c ≤ s by
-              by_contra hcs' ; push_neg at hcs'
-              rw [propext (LE.le.ge_iff_eq hcs')] at hcs
-              specialize hc₁ j hj
-              rw [← hcs] at hc₁
-              exact h' hc₁
-            apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
-            constructor
-            · simp ; exact hc₁
-            · exact hc₂
-        exact h' h''
-    · rw [← @Cardinal.lt_ord] at hlκ
-      exact hC d hlκ
+    · rw [hint]
+      apply int_lt_card_sub_club d hκ₁ hκ₂ hlκ
+      · intro i hi
+        simp
+        specialize hd₂ i hi ?_
+        · rw [← @Cardinal.lt_ord] at * ; exact lt_trans hi hlκ
+        simp at hd₂ ; exact hd₂
+      · intro p q hpq x hx
+        simp ; simp at hx
+        intro i hi
+        have hiq : i ≤ q := by
+          apply le_of_lt ; exact lt_of_le_of_lt hi hpq
+        exact hx i hiq
+      · exact Ordinal.IsLimit.pos hd₁
+    · refine hC d ?_
+      exact Cardinal.lt_ord.mpr hlκ
+    -- · constructor
+    --   · intro i hi
+    --     simp
+    --     specialize hd₂ i hi ?_
+    --     · rw [← @Cardinal.lt_ord] at * ; exact lt_trans hi hlκ
+    --     simp at hd₂ ; exact hd₂
+    --   · intro p q hpq x hx
+    --     simp ; simp at hx
+    --     intro i hi
+    --     have hiq : i ≤ q := by
+    --       apply le_of_lt ; exact lt_of_le_of_lt hi hpq
+    --     exact hx i hiq
+    --   · exact Ordinal.IsLimit.pos hd₁
+    -- · rw [← @Cardinal.lt_ord] at hlκ
+    --   intro b hb₁ hb₂
+    --   intro D ⟨ ⟨ j, hj ⟩ , hD ⟩ ; simp at hD ; rw [← hD]
+    --   obtain ⟨ ⟨ _, hCj₁ ⟩ , hCj₂ ⟩ := hC j (gt_trans hlκ hj)
+    --   set s := sSup (strict_Ordinal_res (⋂ i : (Set.Iio d), C i) b)
+    --   by_contra h'
+    --   have h'' : s ∈ C j := by
+    --     have hs : s = sSup (strict_Ordinal_res (C j) s) := by
+    --     {
+    --       apply csSup_eq_csSup_of_forall_exists_le
+    --       · intro x ⟨ hx₁, hx₂ ⟩
+    --         simp at hx₁
+    --         obtain hxj := hx₁ j hj
+    --         obtain hCjs := res_eq_strict_res_iff.1 h'
+    --         rw [← hCjs]
+    --         use x ; refine ⟨ ⟨ hxj, ?_ ⟩ , Eq.le rfl ⟩
+    --         apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+    --         refine ⟨ ?_, hx₂ ⟩
+    --         simp ; exact hx₁
+    --       · intro y ⟨ hy₁, hy₂ ⟩
+    --         obtain ⟨ z, hz₁, hz₂ ⟩ := exists_lt_of_lt_csSup' hy₂
+    --         use z ; exact ⟨ hz₁, le_of_lt hz₂ ⟩
+    --     }
+    --     rw [hs]
+    --     apply hCj₂
+    --     · obtain hsb := csSup_le' (strict_Ordinal_res_bdd' (⋂ i : (Set.Iio d), C i) b)
+    --       exact lt_of_le_of_lt hsb hb₁
+    --     · obtain ⟨ c, ⟨ hc₁, hc₂ ⟩ ⟩ := hb₂
+    --       simp at hc₁
+    --       use c ; refine ⟨ hc₁ j hj, ?_ ⟩
+    --       suffices hcs : c ≤ s by
+    --         by_contra hcs' ; push_neg at hcs'
+    --         rw [propext (LE.le.ge_iff_eq hcs')] at hcs
+    --         specialize hc₁ j hj
+    --         rw [← hcs] at hc₁
+    --         exact h' hc₁
+    --       apply le_csSup (strict_Ordinal_res_bdd (⋂ i : (Set.Iio d), C i) b)
+    --       constructor
+    --       · simp ; exact hc₁
+    --       · exact hc₂
+    --   exact h' h''
+    -- · exact hC d (Cardinal.lt_ord.mpr hlκ)
 }
+
+
+    /-have := int_Iic C d
+    rw [this] ; apply int_two_club ; clear this
+    · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
+
+      constructor
+      · obtain h0d := Ordinal.IsLimit.pos hd₁
+        obtain h1d := Ordinal.IsLimit.one_lt hd₁
+        obtain hC0 := (hC 0 (Cardinal.IsRegular.ord_pos hκ₁)).1
+        refine ⟨ hC0.1, ?_ ⟩
+        intro a ha
+        -- set f := int_unbounded_choice C a κ.ord d
+        -- have hfκ : ∀ x : (Set.Iio d), f x < κ.ord := by
+        -- use Ordinal.bsup.{u_1, 0} d (fun x hx ↦ f ⟨x, hx⟩)
+        -- refine ⟨ ?_, ?_, ?_ ⟩
+
+        set f : (o : Ordinal) → (o < d) → Ordinal := fun x hx ↦ int_unbounded_choice' C a κ.ord x --d
+        have hfκ : ∀ x : Ordinal, (hxd : x < d) → f x hxd < κ.ord := by
+        {
+          intro x
+          induction x using Ordinal.limitRecOn
+          case H₁ =>
+            intro _
+            simp
+            unfold int_unbounded_choice' ; simp
+            exact unbounded_choice_lt hC0 ha
+          case H₂ y hy =>
+            intro hyd
+            obtain hyd₂ := le_in_Iio hyd ; specialize hy hyd₂
+            simp
+            unfold int_unbounded_choice'
+            have : unbounded_in (⋂ i : Set.Iio y, C i) κ.ord := by
+              sorry
+            simp at this
+            simp
+            apply unbounded_choice_lt this
+            simp at hy ; unfold int_unbounded_choice' at hy ; simp at hy
+            exact hy
+          case H₃ z hz₁ hz₂ =>
+            intro hzd
+            simp
+            unfold int_unbounded_choice'
+            sorry
+        }
+        have hfinc : ∀ x : Ordinal, (hxd : x < d) → (hsucc : (Order.succ x) < d) →
+          f x hxd < f (Order.succ x) hsucc := by
+        {
+          intro x hxd hsucc
+          simp
+          unfold int_unbounded_choice'
+          simp
+          apply unbounded_choice_gt
+          · sorry
+          · induction x using Ordinal.limitRecOn
+            case H₁ =>
+              simp
+              exact unbounded_choice_lt hC0 ha
+            case H₂ y hy =>
+              simp
+              apply unbounded_choice_lt
+              · sorry
+              · apply hy
+                exact (Ordinal.succ_lt_of_isLimit hd₁).mp hxd
+                exact hxd
+            case H₃ z hz₁ hz₂ =>
+              simp [hz₁]
+              apply unbounded_choice_lt
+              · sorry
+              · sorry
+        }
+        set s := Ordinal.bsup.{u_1, 0} d f
+        use s
+        refine ⟨ Cardinal.bsup_lt_ord_of_isRegular hκ₁ hlκ hfκ, ?_, ?_ ⟩
+        · intro D ⟨ ⟨ i, hi₁ ⟩, hi₂ ⟩ ; simp at hi₂ ; rw [← hi₂]
+          rw [@Set.mem_Iio] at hi₁
+          have hiκ : i < κ.ord := by
+            rw [← @Cardinal.lt_ord] at hlκ
+            exact gt_trans hlκ hi₁
+          obtain hCi := hC i hiκ
+          have hsi : s = sSup (strict_Ordinal_res (C i) s) := by --Look at Jech. Will need csSup_lbd.
+          {
+            sorry
+          }
+          rw [hsi]
+          apply hCi.2
+          · exact Cardinal.bsup_lt_ord_of_isRegular hκ₁ hlκ hfκ
+          · refine @nonempty_strict_res_of_sup (C i) s (f 0 h0d) ?_ hsi.symm
+            have h1d' := Ordinal.IsLimit.succ_lt hd₁ h0d
+            apply lt_csSup_of_lt
+            · exact Ordinal.bddAbove_range.{u_1, 0} (Ordinal.familyOfBFamily d f)
+            · have hf0 : (f (Order.succ 0) h1d') ∈ Set.range (Ordinal.familyOfBFamily d f) := by
+                simp
+                use 1
+              exact hf0
+            · apply hfinc 0 h0d h1d'
+              -- simp
+              -- unfold int_unbounded_choice'
+              -- have hC1 : unbounded_in (⋂ i : Set.Iio 1, (C i)) κ.ord := by
+              -- have h1 : 1 = Order.succ 0 := by exact rfl
+              -- simp
+              -- rw [Ordinal.limitRecOn_succ 1]
+              --rw [Ordinal.limitRecOn_zero, @Ordinal.limitRecOn_succ f]
+              --simp [h1, h1d]
+              --simp only [Ordinal.limitRecOn_succ 0]
+
+        · apply lt_csSup_of_lt
+          · exact Ordinal.bddAbove_range.{u_1, 0} (Ordinal.familyOfBFamily d f)
+          · rw [@Ordinal.range_familyOfBFamily]
+            use 0 ; use h0d
+          · simp
+            unfold int_unbounded_choice' ; simp [h0d]
+            exact unbounded_choice_gt hC0 ha
+
+
+        -- have hfgt : ∀ y z : Ordinal, (hyd : y < d) → (hzd : z < d) → (hyz : y < z) →
+        --   (f z hzd) ∈ (C y) := by
+
+        -- · have hCs : s = sSup (strict_Ordinal_res (⋂ i : Set.Iio d, (C i)) s) := by
+        --   {
+        --
+        --   }
+        --   rw [hCs]
+        --   apply closed
+        --   · exact Cardinal.bsup_lt_ord_of_isRegular hκ₁ hlκ hfκ
+        --   · refine @nonempty_strict_res_of_sup (⋂ i : Set.Iio d, (C i)) s (f 0 h0d) ?_ hCs.symm
+        --     apply lt_csSup_of_lt
+        --     · exact Ordinal.bddAbove_range.{u_1, 0} (Ordinal.familyOfBFamily d f)
+        --     · simp
+        --       use 1 ; use h1d
+        --     · unfold int_unbounded_choice'
+        --       have hC1 : unbounded_in (⋂ i : Set.Iio 1, (C i)) κ.ord := by
+        --       have : 1 = Order.succ 0 := by exact rfl
+        --       simp
+        --       unfold int_unbounded_choice'
+        --       simp
+        --
+        -- · apply lt_csSup_of_lt
+        --   · exact Ordinal.bddAbove_range.{u_1, 0} (Ordinal.familyOfBFamily d f)
+        --   · rw [@Ordinal.range_familyOfBFamily]
+        --     use 0 ; use h0d
+        --   · simp
+        --     unfold int_unbounded_choice' ; simp [h0d]
+        --     exact unbounded_choice_gt hC0 ha
+      · exact closed
+    · rw [← @Cardinal.lt_ord] at hlκ
+      exact hC d hlκ -/
+
 
 theorem diag_int_club_sub_unbounded {o : Ordinal} (hocof : Cardinal.aleph0 < o.cof)
   (C : Ordinal → Set Ordinal) (hC : ∀ d : Ordinal, d < o → club_in (C d) o)

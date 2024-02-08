@@ -524,3 +524,47 @@ theorem regressive_on_stationary (S : Set Ordinal) (κ : Cardinal) (hκ₁ : κ.
     exact hα (f α) hf rfl
   }
 -/
+
+
+theorem int_lt_card_sub_club {κ : Cardinal} (l : Ordinal) (hκ₁ : κ.IsRegular)
+  (hκ₂ : Cardinal.aleph0 < κ) (hlκ : l.card < κ) (C : Ordinal → Set Ordinal)
+  (hC : ∀ i : Ordinal, i < l → club_in (C i) κ.ord)
+  (hCsub : ∀ a d : Ordinal, a < d → C d ⊆ C a) (nontriv : 0 < l):
+    club_in (⋂ i : Set.Iio l, (C i)) κ.ord := by
+  {
+    induction l, nontriv using Ordinal.limitRecOn
+    case H₁ =>
+      exfalso
+      exact LT.lt.false nontriv
+    case H₂ d hd =>
+      have : (⋂ i : Set.Iio (Order.succ d), (C i)) = --Make this a lemma
+        (⋂ i : Set.Iio d, (C i)) ∩ (C d) :=by
+        {
+          ext x ; constructor
+          · intro hx ; simp [Set.iInter_coe_set] at *
+            constructor
+            · intro i hi
+              refine hx i ?_
+              exact LT.lt.le hi
+            · refine hx d (le_of_eq ?_) ; rfl
+          · intro hx ; simp [Set.iInter_coe_set] at * ; obtain ⟨ hx₁, hx₂ ⟩ := hx
+            intro i hi
+            rw [@le_iff_lt_or_eq] at hi
+            obtain hi₁|hi₂ := hi
+            exact hx₁ i hi₁
+            rw [hi₂] ; exact hx₂
+        }
+      rw [this]
+      apply int_two_club
+      · rw [Cardinal.IsRegular.cof_eq hκ₁] ; exact hκ₂
+      · apply hd
+        · rw [← @Cardinal.lt_ord] at *
+          obtain hyp := Order.lt_succ d
+          exact gt_trans hlκ hyp
+        · intro i hi
+          have hisd : i < Order.succ d := by rw [@Order.lt_succ_iff] ; exact LT.lt.le hi
+          exact hC i hisd
+        · sorry
+      · exact hC d (Order.lt_succ d)
+    sorry
+  }
