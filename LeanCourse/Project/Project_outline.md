@@ -23,6 +23,7 @@ Project Overview
 > Each statement uses the one before it. \
 > The proofs are split into unboundedness and closedness.
 
+> The `Trash` file contains previous failed attempts, I'm keeping it in the project because some of the ideas I dump there actually turn out to be quite useful.
 ## To-do list
 
 The proof is complete, but there is a lot of optimization to be made.
