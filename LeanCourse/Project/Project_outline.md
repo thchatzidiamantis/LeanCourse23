@@ -23,7 +23,7 @@ Project Overview
 > Each statement uses the one before it. \
 > The proofs are split into unboundedness and closedness.
 
-> The `Trash` file contains previous failed attempts, I'm keeping it in the project because some of the ideas I dump there actually turn out to be quite useful althought it is not part of my submission.
+> The `Trash.lean` file contains previous failed attempts and is not part of my submission, I'm keeping it in the project because some of the ideas I dump there actually turn out to be quite useful.
 
 ## To-do list
 
