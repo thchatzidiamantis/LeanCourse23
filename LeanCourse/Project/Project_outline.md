@@ -8,7 +8,7 @@ Project Overview
 * Basic properties of restrictions of sets of ordinals by taking the elemtnts that are smaller
   than a given ordinal (i.e, the equivalent of intersections of sets and ordinals).
 * All definitions: Unbounded sets, club sets, stationary sets, regressive functions, diagonal intersection.
-* All inductive constructions of sequences needed for the proofs and their basic properties.
+* All inductive constructions of sequences needed for the big proofs and their basic properties.
 
 ### Contents of `Fodor.lean`:
 
@@ -25,8 +25,16 @@ Project Overview
 
 ## To-do list
 
-The proof is complete (don't look at this before Friday), but there is a lot of optimization to be made.
+The proof is complete, but there is a lot of optimization to be made.
 I highlight the main improvements that I have in mind:
 
 * The theorem `int_lt_card_club` can also be proven in a more general setting, namely for sequences
   of sets indexed in an ordinal less than the cofinality of κ.
+* The construction of (and main lemmas for) `long_unbounded_choice` can improved.
+* All proofs in `Fodor.lean` contain components that could be easily made into separate lemmas. I have added comments next to them in the file.
+* The naming convention in inductive proofs is quite messy (mostly the naming of hypotheses that later refer to differently named terms).
+* Add and improve descriptions of the definitions in `Club.lean`.
+
+## References
+* T. Jech, Set Theory: The Third Millennium Edition, Springer, 2003.
+* E. Schimmerling, A Course on Set Theory, Cambridge University Press, 2011

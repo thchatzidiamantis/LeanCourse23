@@ -530,19 +530,6 @@ lemma le_in_Iio {o a: Ordinal} (h : Order.succ a ∈ Set.Iio o) : a ∈ Set.Iio 
     exact Order.lt_succ a
   exact gt_trans h this
 
-/-Maybe the Iic version is better
-noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal) : (Set.Iio c) → Ordinal := by
-{
-  intro ⟨ x, hx ⟩
-  induction x using Ordinal.limitRecOn
-  case H₁ =>
-    use unbounded_choice (C 0) b a
-  case H₂ d f =>
-    use unbounded_choice (⋂ i : (Set.Iic d), C i) b (f (le_in_Iic hx))
-  case H₃ d _ f =>
-    set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, ∃ hzc : z ∈ Set.Iic c, f z hzd hzc = v}
-    use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
-}-/
 noncomputable def int_unbounded_choice (C : Ordinal → Set Ordinal) (a b c: Ordinal)
   : (Set.Iio c) → Ordinal := by --This is currently useless
 {
@@ -571,6 +558,7 @@ noncomputable def int_unbounded_choice' (C : Ordinal → Set Ordinal) (a b : Ord
     use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
 }
 
+/--Create increasing sequences of arbitrary length using unboundedness.-/
 noncomputable def long_unbounded_choice (C : Ordinal → Set Ordinal) (a b : Ordinal) :
   Ordinal → Ordinal := by
 {
@@ -582,7 +570,6 @@ noncomputable def long_unbounded_choice (C : Ordinal → Set Ordinal) (a b : Ord
     use unbounded_choice (C (Order.succ d)) b f
   case H₃ d _ f =>
     set g : (z : Ordinal) → (hzd : z < d) → Ordinal := fun z hzd ↦ f z hzd
-    --set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, f z hzd = v}
     use unbounded_choice (C d) b (Ordinal.bsup.{_, 0} d g)
 }
 
@@ -666,7 +653,7 @@ lemma long_unbounded_choice_in {κ : Cardinal} (C : Ordinal → Set Ordinal) (a 
     · exact hd₁
 }
 
-lemma long_unbounded_choice_increasing {κ : Cardinal} (C : Ordinal → Set Ordinal) (a i: Ordinal)
+lemma long_unbounded_choice_succ {κ : Cardinal} (C : Ordinal → Set Ordinal) (a i: Ordinal)
   (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ) (hiκ : i < κ.ord)
   (haκ : a < κ.ord) (hCi : ∀ j : Ordinal, j ≤ Order.succ i → unbounded_in (C j) κ.ord) :
   long_unbounded_choice C a κ.ord i < long_unbounded_choice C a κ.ord (Order.succ i) := by
@@ -684,38 +671,70 @@ lemma long_unbounded_choice_increasing {κ : Cardinal} (C : Ordinal → Set Ordi
       apply hCi ; apply le_of_lt ; exact Order.lt_succ_iff.mpr hj
 }
 
--- noncomputable def int_unbounded_choice' (C : Ordinal → Set Ordinal) (a b c: Ordinal) :
---   (o : Ordinal) → (o < c) → Ordinal := by
--- {
---   intro x
---   induction x using Ordinal.limitRecOn
---   case H₁ =>
---     intro _ ; use unbounded_choice (C 0) b a
---   case H₂ d f =>
---     intro hd ; use unbounded_choice (⋂ i : (Set.Iio d), C i) b (f (le_in_Iio hd))
---   case H₃ d _ f =>
---     intro _
---     set s := sSup {v : Ordinal | ∃ z : Ordinal, ∃ hzd : z < d, ∃ hzc : z < c, f z hzd hzc = v}
---     use unbounded_choice (⋂ i : (Set.Iio d), C i) b s
--- }
-
--- lemma int_unbounded_choice_lt {C : Ordinal → Set Ordinal} {a c : Ordinal} {κ : Cardinal}
---   (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ) (haκ : a < κ.ord) (hlκ : c.card < κ)
---   (hC : ∀ i : Ordinal, i < κ.ord → unbounded_in (C i) κ.ord) :
---     ∀ v : Set.Iic c, (int_unbounded_choice C a κ.ord c v) < κ.ord := by
---   {
---     unfold int_unbounded_choice
---     intro ⟨ x, hx ⟩
---     induction x using Ordinal.limitRecOn
---     case H₁ =>
---       obtain h0 := hC 0 (Cardinal.IsRegular.ord_pos hκ₁)
---       simp [h0]
---       exact unbounded_choice_lt h0 haκ
---     case H₂ d hd =>
---       have hCd : unbounded_in (C d) κ.ord := by sorry
---       sorry
---     sorry
---   }
+lemma long_unbounded_choice_increasing {κ : Cardinal} (C : Ordinal → Set Ordinal) (a i o: Ordinal)
+  (hκ₁ : κ.IsRegular) (hκ₂ : Cardinal.aleph0 < κ) (hiκ : i < κ.ord) (hoκ : o < κ.ord) (hio : i < o)
+  (haκ : a < κ.ord) (hCi : ∀ j : Ordinal, j ≤ o → unbounded_in (C j) κ.ord) :
+  long_unbounded_choice C a κ.ord i < long_unbounded_choice C a κ.ord o := by
+{
+  induction o using Ordinal.limitRecOn
+  case H₁ =>
+    exfalso
+    exact Ordinal.not_lt_zero i hio
+  case H₂ d hd =>
+    have hdκ : d < κ.ord := by
+      have hd' : d < Order.succ d := by exact Order.lt_succ d
+      exact gt_trans hoκ hd'
+    obtain ih := long_unbounded_choice_succ C a d hκ₁ hκ₂ hdκ haκ hCi
+    by_cases i < d
+    · specialize hd ?_ h ?_
+      · exact hdκ
+      · intro j hj
+        apply hCi j
+        have := Order.le_succ d
+        exact le_trans hj this
+      exact gt_trans ih hd
+    · rw [@not_lt] at h
+      have : i ≤ d := by exact Order.lt_succ_iff.mp hio
+      have : d = i := by exact le_antisymm h this
+      rw [← this] ; exact ih
+  case H₃ d hd₁ _ =>
+    have : long_unbounded_choice C a κ.ord i < (Ordinal.bsup.{_, 0} d fun z _ ↦
+      long_unbounded_choice C a κ.ord z ) := by
+    {
+      refine (Ordinal.lt_bsup fun z _ ↦ long_unbounded_choice C a (Cardinal.ord κ) z).mpr ?_
+      use Order.succ i ; use ?_
+      apply long_unbounded_choice_succ
+      · exact hκ₁
+      · exact hκ₂
+      · exact hiκ
+      · exact haκ
+      · intro j hj
+        apply hCi ; apply le_of_lt
+        have : Order.succ i < d := by exact Ordinal.IsLimit.succ_lt hd₁ hio
+        exact lt_of_le_of_lt hj this
+      · exact Ordinal.IsLimit.succ_lt hd₁ hio
+    }
+    have this' : (Ordinal.bsup.{_, 0} d fun z _ ↦
+      long_unbounded_choice C a κ.ord z ) < long_unbounded_choice C a κ.ord d := by
+    {
+      unfold long_unbounded_choice ; rw [Ordinal.limitRecOn_limit] ; simp
+      apply unbounded_choice_gt
+      apply hCi d ; rfl
+      apply Ordinal.bsup_lt_ord
+      · rw [Cardinal.IsRegular.cof_eq hκ₁]
+        exact Cardinal.lt_ord.mp hoκ
+      · intro i hi
+        apply long_unbounded_choice_lt
+        · exact hκ₁
+        · exact hκ₂
+        · exact lt_trans hi hoκ
+        · exact haκ
+        · intro j hj
+          apply hCi ; apply le_of_lt ; exact lt_of_le_of_lt hj hi
+      · exact hd₁
+    }
+    exact lt_trans this this'
+}
 
 lemma int_Iic {α} (C : Ordinal → Set α) (d : Ordinal) :
   (⋂ i : Set.Iic d, (C i)) = (⋂ i : Set.Iio d, (C i)) ∩ (C d) := by
