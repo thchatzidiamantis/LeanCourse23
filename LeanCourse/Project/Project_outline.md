@@ -20,7 +20,7 @@ Project Overview
 * Proof that the diagonal intersection of κ club sets in κ is club in κ.
 * Proof of Fodor's lemma.
 
-> Each statement uses the one before it. \
+> Each statement in `Fodor.lean` uses the one before it. \
 > The proofs are split into unboundedness and closedness.
 
 > The `Trash.lean` file contains previous failed attempts and is not part of my submission, I'm keeping it in the project because some of the ideas I dump there actually turn out to be quite useful.
